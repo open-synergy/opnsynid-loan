@@ -1,24 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Copyright 2016 OpenSynergy Indonesia
+<!-- Copyright 2019 OpenSynergy Indonesia
      License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl). -->
 
 <openerp>
 <data>
 
-<record id="hr_loan_type_view_tree" model="ir.ui.view">
-    <field name="name">Employee Loan Type</field>
-    <field name="model">hr.loan.type</field>
+<record id="loan_type_view_tree" model="ir.ui.view">
+    <field name="name">Loan Type</field>
+    <field name="model">loan.type</field>
     <field name="arch" type="xml">
         <tree string="Loan Type">
             <field name="name"/>
             <field name="code"/>
+            <field name="direction"/>
         </tree>
     </field>
 </record>
 
-<record id="hr_loan_type_view_form" model="ir.ui.view">
-    <field name="name">Employee Loan Type</field>
-    <field name="model">hr.loan.type</field>
+<record id="loan_type_view_form" model="ir.ui.view">
+    <field name="name">Loan Type</field>
+    <field name="model">loan.type</field>
     <field name="arch" type="xml">
         <form string="Loan Type">
             <header>
@@ -33,40 +34,60 @@
             <group name="group_general_information" colspan="4" col="2" string="General Information">
                 <field name="active"/>
                 <field name="currency_id" invisible="1"/>
-                <field name="interest_method"/>
-                <field name="maximum_loan_amount" widget="monetary" options="{'currency_field':'currency_id'}"/>
-                <field name="interest_amount"/>
-                <field name="maximum_installment_period"/>
+                <field name="direction"/>
+                <field name="sequence_id"/>
+
             </group>
-            <group name="group_acc" colspan="4" col="2" string="Accounting Setting">
-                <field name="journal_id"/>
-                <field name="account_realization_id"/>
-                <field name="account_principle_id"/>
-                <field name="account_interest_id"/>
-                <field name="account_interest_income_id"/>
-            </group>
+            <notebook>
+                <page name="loan" string="Loan Configuration">
+                    <group name="loan_1" colspan="4" col="2">
+                        <field name="interest_method"/>
+                        <field name="maximum_loan_amount" widget="monetary" options="{'currency_field':'currency_id'}"/>
+                        <field name="interest_amount"/>
+                        <field name="maximum_installment_period"/>
+                    </group>
+                </page>
+                <page name="accounting" string="Accounting">
+                    <group name="accounting_1" colspan="4" col="2">
+                        <group name="accounting_1_1" colspan="1" col="2" string="Priciple Realization">
+                            <field name="realization_journal_id"/>
+                            <field name="account_realization_id"/>
+                            <field name="short_account_principle_id"/>
+                            <field name="long_account_principle_id"/>
+                            <field name="account_rounding_id"/>
+                        </group>
+                        <group name="accounting_1_2" colspan="1" col="2" string="Interest Realization">
+                            <field name="interest_journal_id"/>
+                            <field name="account_interest_id"/>
+                            <field name="account_interest_income_id"/>
+                        </group>
+                    </group>
+                </page>
+                <page name="policy" string="Workflow Policy">
+                    <group name="loan_policy_1" colspan="4" col="2" string="Loan">
+                        <field name="loan_confirm_group_ids" widget="many2many_tags"/>
+                        <field name="loan_approve_group_ids" widget="many2many_tags"/>
+                        <field name="loan_cancel_group_ids" widget="many2many_tags"/>
+                        <field name="loan_restart_group_ids" widget="many2many_tags"/>
+                    </group>
+                </page>
+            </notebook>
         </form>
     </field>
 </record>
 
-<record id="hr_loan_type_action" model="ir.actions.act_window">
+<record id="loan_type_action" model="ir.actions.act_window">
     <field name="name">Loan Type</field>
-    <field name="res_model">hr.loan.type</field>
+    <field name="res_model">loan.type</field>
     <field name="view_type">form</field>
     <field name="view_mode">tree,form</field>
 </record>
 
-<menuitem 
-    name="Employee Loan"
-    parent="hr.menu_hr_configuration"
-    id="employee_loan_configuration_menu"
-    />
-
-<menuitem 
+<menuitem
     name="Loan Type"
-    parent="employee_loan_configuration_menu"
-    id="hr_oan_type_menu"
-    action="hr_loan_type_action"
+    parent="loan_configuration_menu"
+    id="loan_type_menu"
+    action="loan_type_action"
     />
 </data>
 </openerp>
