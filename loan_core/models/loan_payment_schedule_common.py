@@ -1,0 +1,426 @@
+# -*- coding: utf-8 -*-
+# Copyright 2019 OpenSynergy Indonesia
+# License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
+
+from datetime import datetime
+from openerp import models, fields, api
+from openerp.tools.translate import _
+from openerp.exceptions import Warning as UserError
+
+DATE_SELECTION = map(lambda x: [x, str(x)], range(1, 32))
+
+
+class LoanPaymentScheduleCommon(models.AbstractModel):
+    _name = "loan.payment_schedule_common"
+    _description = "Loan Payment Schedule"
+    _order = "schedule_date, id"
+
+    @api.multi
+    @api.depends("principle_amount", "interest_amount")
+    def _compute_installment(self):
+        for payment in self:
+            payment.installment_amount = payment.principle_amount + \
+                payment.interest_amount
+
+    @api.multi
+    def _compute_state(self):
+        for payment in self:
+            principle_move_line = payment.principle_move_line_id
+            interest_move_line = payment.interest_move_line_id
+            if not principle_move_line:
+                payment.principle_payment_state = "unpaid"
+            elif principle_move_line and \
+                    not principle_move_line.reconcile_partial_id and \
+                    not principle_move_line.reconcile_id:
+                payment.principle_payment_state = "unpaid"
+            elif principle_move_line.reconcile_partial_id:
+                payment.principle_payment_state = "partial"
+            elif principle_move_line.reconcile_id:
+                payment.principle_payment_state = "paid"
+
+            if not interest_move_line:
+                payment.interest_payment_state = "unpaid"
+            elif interest_move_line and \
+                    not interest_move_line.reconcile_partial_id and \
+                    not interest_move_line.reconcile_id:
+                payment.interest_payment_state = "unpaid"
+            elif interest_move_line.reconcile_partial_id:
+                payment.interest_payment_state = "partial"
+            elif interest_move_line.reconcile_id:
+                payment.interest_payment_state = "paid"
+
+    loan_id = fields.Many2one(
+        string="# Loan",
+        comodel_name="loan.common",
+        ondelete="cascade",
+    )
+    partner_id = fields.Many2one(
+        string="Partner",
+        comodel_name="res.partner",
+        readonly=True,
+    )
+    currency_id = fields.Many2one(
+        string="Currency",
+        comodel_name="res.currency",
+        readonly=True,
+    )
+    schedule_date = fields.Date(
+        string="Schedule Date",
+        required=True,
+    )
+    principle_amount = fields.Float(
+        string="Principle Amount",
+        required=True,
+    )
+    interest_amount = fields.Float(
+        string="Interest Amount",
+        required=True,
+    )
+    installment_amount = fields.Float(
+        string="Installment Amount",
+        compute="_compute_installment",
+        store=True,
+    )
+    principle_payment_state = fields.Selection(
+        string="Principle Payment State",
+        selection=[
+            ("unpaid", "Unpaid"),
+            ("partial", "Partial Paid"),
+            ("paid", "Paid"),
+        ],
+        compute="_compute_state",
+        required=False,
+        store=True,
+    )
+    interest_payment_state = fields.Selection(
+        string="Interest Payment State",
+        selection=[
+            ("unpaid", "Unpaid"),
+            ("partial", "Partial Paid"),
+            ("paid", "Paid"),
+        ],
+        compute="_compute_state",
+        required=False,
+        store=True,
+    )
+    principle_move_line_id = fields.Many2one(
+        string="Principle Move Line",
+        comodel_name="account.move.line",
+        readonly=True,
+    )
+    old_principle_move_line_id = fields.Many2one(
+        string="Old Principle Move Line",
+        comodel_name="account.move.line",
+        readonly=True,
+    )
+    principle_move_id = fields.Many2one(
+        string="Principle Move",
+        comodel_name="account.move",
+    )
+    interest_move_line_id = fields.Many2one(
+        string="Interest Move Line",
+        comodel_name="account.move.line",
+        readonly=True,
+    )
+    interest_move_id = fields.Many2one(
+        string="Interest Move",
+        comodel_name="account.move",
+    )
+    state = fields.Selection(
+        string="State",
+        selection=[
+            ("draft", "Draft"),
+            ("confirm", "Waiting for Approval"),
+            ("approve", "Waiting for Realization"),
+            ("active", "Active"),
+            ("done", "Done"),
+            ("cancel", "Cancelled"),
+        ],
+        readonly=True,
+    )
+
+    @api.multi
+    def name_get(self):
+        res = []
+        for schedule in self:
+            name = "%s %s" % (
+                schedule.loan_id.display_name, schedule.schedule_date)
+            res.append((schedule.id, name))
+        return res
+
+    @api.multi
+    def action_realize_interest(self, date_realization=False):
+        for schedule in self:
+            schedule._create_interest_realization_move(date_realization)
+
+    @api.multi
+    def _prepare_interest_realization_move(self, date_realization=False):
+        self.ensure_one()
+        if not date_realization:
+            date_realization = self.schedule_date
+        obj_period = self.env["account.period"]
+        loan = self.loan_id
+        res = {
+            "name": "/",
+            "journal_id": loan.type_id.interest_journal_id.id,
+            "date": date_realization,
+            "ref": loan.name,
+            "period_id": obj_period.find(
+                date_realization)[0].id,
+        }
+        return res
+
+    @api.multi
+    def _create_interest_realization_move(self, date_realization):
+        self.ensure_one()
+        obj_move = self.env[
+            "account.move"]
+        obj_line = self.env[
+            "account.move.line"]
+
+        move = obj_move.sudo().create(
+            self._prepare_interest_realization_move(
+                date_realization))
+
+        line_receivable = obj_line.sudo().create(
+            self._prepare_interest_realization_move_line(
+                move))
+
+        self.interest_move_line_id = line_receivable
+
+        obj_line.sudo().create(
+            self._prepare_interest_income_move_line(
+                move))
+
+    @api.multi
+    def _get_realization_move_line_amount(self):
+        self.ensure_one()
+        debit = credit = 0.0
+        loan = self.loan_id
+        if loan.direction == "in":
+            credit = self.principle_amount
+        else:
+            debit = self.principle_amount
+        return debit, credit
+
+    @api.multi
+    def _get_realization_move_line_account(self):
+        self.ensure_one()
+        dt_today = datetime.now()
+        loan = self.loan_id
+        dt_schedule = datetime.strptime(self.schedule_date, "%Y-%m-%d")
+        account = False
+        if abs((dt_schedule - dt_today).days) > 365:
+            account = loan.type_id.long_account_principle_id
+        else:
+            account = loan.type_id.short_account_principle_id
+        return account
+
+    @api.multi
+    def _prepare_principle_receivable_move_line(self, move):
+        self.ensure_one()
+        loan = self.loan_id
+        name = _("%s %s principle receivable") % (
+            loan.name, self.schedule_date)
+        debit, credit = \
+            self._get_realization_move_line_amount()
+        account = \
+            self._get_realization_move_line_account()
+        res = {
+            "move_id": move.id,
+            "name": name,
+            "account_id": account.id,
+            "debit": debit,
+            "credit": credit,
+            "date_maturity": self.schedule_date,
+            "partner_id": loan.partner_id.id,
+        }
+        return res
+
+    @api.multi
+    def _create_principle_receivable_move_line(self, move):
+        self.ensure_one()
+        line = self.env[
+            "account.move.line"].create(
+                self._prepare_principle_receivable_move_line(move))
+        self.principle_move_line_id = line
+
+    @api.multi
+    def _get_interest_realization_move_line_amount(self):
+        self.ensure_one()
+        debit = credit = 0.0
+        loan = self.loan_id
+        if loan.direction == "in":
+            credit = self.interest_amount
+        else:
+            debit = self.interest_amount
+        return debit, credit
+
+    @api.multi
+    def _prepare_interest_realization_move_line(self, move):
+        self.ensure_one()
+        loan = self.loan_id
+        loan_type = loan.type_id
+        name = _("%s %s interest receivable") % (loan.name, self.schedule_date)
+
+        debit, credit = self._get_interest_realization_move_line_amount()
+
+        res = {
+            "move_id": move.id,
+            "name": name,
+            "account_id": loan_type.account_interest_id.id,
+            "debit": debit,
+            "credit": credit,
+            "date_maturity": self.schedule_date,
+            "partner_id": loan.partner_id.id,
+        }
+        return res
+
+    @api.multi
+    def _get_interest_move_line_amount(self):
+        self.ensure_one()
+        debit = credit = 0.0
+        loan = self.loan_id
+        if loan.direction == "out":
+            credit = self.interest_amount
+        else:
+            debit = self.interest_amount
+        return debit, credit
+
+    @api.multi
+    def _prepare_interest_income_move_line(self, move):
+        self.ensure_one()
+        loan = self.loan_id
+        loan_type = loan.type_id
+        name = _("%s %s interest income") % (loan.name, self.schedule_date)
+        debit, credit = self._get_interest_move_line_amount()
+        res = {
+            "move_id": move.id,
+            "name": name,
+            "account_id": loan_type.account_interest_income_id.id,
+            "credit": credit,
+            "debit": debit,
+            "date_maturity": self.schedule_date,
+            "partner_id": self.loan_id.partner_id.id,
+        }
+        return res
+
+    @api.multi
+    def action_long_to_short_term(self):
+        for schedule in self:
+            if not schedule._check_account_long_to_short_conversion():
+                msg = _("Can not convert long term into short term")
+                raise UserError(msg)
+            schedule.write(schedule._prepare_long_to_short_term())
+            schedule._reconcile_long_short()
+
+    @api.multi
+    def _reconcile_long_short(self):
+        self.ensure_one()
+        obj_line = self.env["account.move.line"]
+        old_line = self.old_principle_move_line_id
+        account = old_line.account_id
+        criteria = [
+            ("move_id", "=", self.principle_move_id.id),
+            ("account_id", "=", account.id)
+        ]
+        target_line = obj_line.search(criteria)[0]
+        (old_line + target_line).reconcile_partial()
+        return True
+
+    @api.multi
+    def _prepare_long_to_short_term(self):
+        self.ensure_one()
+        old_move_line = self.principle_move_line_id
+        new_move_line = self._create_new_principle_move_line()
+        res = {
+            "principle_move_line_id": new_move_line.id,
+            "old_principle_move_line_id": old_move_line.id,
+        }
+        return res
+
+    @api.multi
+    def _create_new_principle_move_line(self):
+        self.ensure_one()
+        obj_move = self.env["account.move"]
+        obj_line = self.env["account.move.line"]
+        move = obj_move.create(
+            self._prepare_new_principle_move())
+        line = obj_line.create(
+            self._prepare_short_new_principle_move_line(move)
+        )
+        obj_line.create(
+            self._prepare_long_new_principle_move_line(move)
+        )
+        return line
+
+    @api.multi
+    def _prepare_new_principle_move(self):
+        self.ensure_one()
+        date_entry = self.schedule_date
+        loan = self.loan_id
+        obj_period = self.env["account.period"]
+        res = {
+            "name": "/",
+            "journal_id": loan.type_id.realization_journal_id.id,
+            "date": date_entry,
+            "ref": loan.name,
+            "period_id": obj_period.find(
+                date_entry)[0].id,
+        }
+        return res
+
+    @api.multi
+    def _prepare_short_new_principle_move_line(self, move):
+        self.ensure_one()
+        loan = self.loan_id
+        loan_type = loan.type_id
+        name = _("%s %s long to short") % (loan.name, self.schedule_date)
+        res = {
+            "move_id": move.id,
+            "name": name,
+            "account_id": loan_type.short_account_principle_id.id,
+            "credit": self.principle_amount,
+            "debit": 0.0,
+            "date_maturity": self.schedule_date,
+            "partner_id": self.loan_id.partner_id.id,
+        }
+        return res
+
+    @api.multi
+    def _prepare_long_new_principle_move_line(self, move):
+        self.ensure_one()
+        loan = self.loan_id
+        loan_type = loan.type_id
+        name = _("%s %s long to short") % (loan.name, self.schedule_date)
+        res = {
+            "move_id": move.id,
+            "name": name,
+            "account_id": loan_type.long_account_principle_id.id,
+            "debit": self.principle_amount,
+            "credit": 0.0,
+            "date_maturity": self.schedule_date,
+            "partner_id": self.loan_id.partner_id.id,
+        }
+        return res
+
+    @api.multi
+    def _check_account_long_to_short_conversion(self):
+        self.ensure_one()
+        check = True
+        if self.principle_move_line_id.account_id != \
+                self.loan_id.type_id.long_account_principle_id:
+            check = False
+        return check
+
+    @api.model
+    def realize_interest_income(self):
+        model_name = self._name
+
+        criteria = [
+            ("schedule_date", "<=", datetime.now().strftime("%Y-%m-%d")),
+            ("state", "=", "active"),
+        ]
+        obj_schedule = self.env[model_name]
+        schedules = obj_schedule.search(criteria)
+        schedules.action_realize_interest()

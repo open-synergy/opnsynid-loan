@@ -1,21 +1,28 @@
 # -*- coding: utf-8 -*-
-# Copyright 2016 OpenSynergy Indonesia
+# Copyright 2019 OpenSynergy Indonesia
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
 
 from dateutil import relativedelta
 from datetime import datetime
 from openerp import models, fields, api
 from openerp.tools.translate import _
-from openerp.addons import decimal_precision as dp
 from openerp.exceptions import Warning as UserError
 
 DATE_SELECTION = map(lambda x: [x, str(x)], range(1, 32))
 
 
-class HrLoan(models.Model):
-    _name = "hr.loan"
-    _description = "Employee Loan"
-    _inherit = ["mail.thread"]
+class LoanCommon(models.AbstractModel):
+    _name = "loan.common"
+    _description = "Abstract Model for Loan"
+    _inherit = [
+        "mail.thread",
+        "base.sequence_document",
+        "base.workflow_policy_object",
+    ]
+
+    @api.model
+    def _default_company_id(self):
+        return self.env.user.company_id
 
     @api.multi
     @api.depends(
@@ -52,9 +59,6 @@ class HrLoan(models.Model):
                     day=date_payment, months=+1)
 
     @api.multi
-    @api.depends(
-        "move_line_header_id",
-        "move_line_header_id.reconcile_id")
     def _compute_realization(self):
         for loan in self:
             loan.realized = False
@@ -63,26 +67,43 @@ class HrLoan(models.Model):
             if loan.move_line_header_id.reconcile_id:
                 loan.realized = True
 
-    @api.model
-    def _default_employee_id(self):
-        criteria = [
-            ("user_id", "=", self.env.user.id),
-        ]
-        employee = self.env["hr.employee"].search(criteria, limit=1)
-        return employee
+    @api.multi
+    @api.depends(
+        "type_id",
+    )
+    def _compute_policy(self):
+        _super = super(LoanCommon, self)
+        _super._compute_policy()
 
     name = fields.Char(
         string="# Loan",
         required=True,
         default="/",
         readonly=True,
+        states={
+            "draft": [
+                ("readonly", False),
+            ],
+        },
     )
-    employee_id = fields.Many2one(
-        string="Employee",
-        comodel_name="hr.employee",
+    company_id = fields.Many2one(
+        string="Company",
+        comodel_name="res.company",
         required=True,
-        default=_default_employee_id,
+        default=lambda self: self._default_company_id(),
+    )
+    partner_id = fields.Many2one(
+        string="Partner",
+        comodel_name="res.partner",
+        required=True,
         readonly=True,
+        domain=[
+            "|",
+            "&",
+            ("parent_id", "=", False),
+            ("is_company", "=", False),
+            ("is_company", "=", True),
+        ],
         states={
             "draft": [
                 ("readonly", False),
@@ -109,9 +130,9 @@ class HrLoan(models.Model):
             ],
         },
     )
-    loan_type_id = fields.Many2one(
+    type_id = fields.Many2one(
         string="Loan Type",
-        comodel_name="hr.loan.type",
+        comodel_name="loan.type",
         required=True,
         readonly=True,
         states={
@@ -120,10 +141,16 @@ class HrLoan(models.Model):
             ],
         },
     )
+    direction = fields.Selection(
+        string="Direction",
+        selection=[
+            ("in", "In"),
+            ("out", "Out"),
+        ],
+    )
     currency_id = fields.Many2one(
         string="Currency",
-        related="loan_type_id.currency_id",
-        store=True,
+        comodel_name="res.currency",
         readonly=True,
     )
     loan_amount = fields.Float(
@@ -135,19 +162,13 @@ class HrLoan(models.Model):
                 ("readonly", False),
             ],
         },
-        digits=dp.get_precision("Account"),
     )
     maximum_loan_amount = fields.Float(
         string="Maximum Loan Amount",
-        related="loan_type_id.maximum_loan_amount",
-        store=True,
         readonly=True,
-        digits=dp.get_precision("Account"),
     )
     interest = fields.Float(
         string="Interest (p.a)",
-        related="loan_type_id.interest_amount",
-        store=True,
         readonly=True,
         required=True,
         states={
@@ -155,12 +176,9 @@ class HrLoan(models.Model):
                 ("readonly", False),
             ],
         },
-        digits=dp.get_precision("Account"),
     )
     maximum_installment_period = fields.Integer(
         string="Maximum Installment Period",
-        related="loan_type_id.maximum_installment_period",
-        store=True,
         readonly=True,
     )
     manual_loan_period = fields.Integer(
@@ -188,13 +206,11 @@ class HrLoan(models.Model):
         string="Total Principle Amount",
         compute="_compute_total",
         store=True,
-        digits=dp.get_precision("Account"),
     )
     total_interest_amount = fields.Float(
         string="Total Interest Amount",
         compute="_compute_total",
         store=True,
-        digits=dp.get_precision("Account"),
     )
     realized = fields.Boolean(
         string="Realized",
@@ -203,7 +219,7 @@ class HrLoan(models.Model):
     )
     payment_schedule_ids = fields.One2many(
         string="Payment Schedules",
-        comodel_name="hr.loan.payment.schedule",
+        comodel_name="loan.payment_schedule_common",
         inverse_name="loan_id",
     )
     confirm_date = fields.Datetime(
@@ -254,13 +270,13 @@ class HrLoan(models.Model):
     manual_realization = fields.Boolean(
         string="Manual Realization",
     )
-    move_receivable_id = fields.Many2one(
-        string="Receivable Journal Entry",
+    move_realization_id = fields.Many2one(
+        string="Realization Journal Entry",
         comodel_name="account.move",
         readonly=True,
     )
     move_line_header_id = fields.Many2one(
-        string="Receivable Move Line Header",
+        string="Realization Move Line Header",
         comodel_name="account.move.line",
         readonly=True,
     )
@@ -277,6 +293,23 @@ class HrLoan(models.Model):
         default="draft",
         required=True,
         readonly=True,
+    )
+    # Policy Fields
+    confirm_ok = fields.Boolean(
+        string="Can Confirm",
+        compute="_compute_policy",
+    )
+    approve_ok = fields.Boolean(
+        string="Can Approve",
+        compute="_compute_policy",
+    )
+    cancel_ok = fields.Boolean(
+        string="Can Cancel",
+        compute="_compute_policy",
+    )
+    restart_ok = fields.Boolean(
+        string="Can Restart",
+        compute="_compute_policy",
     )
 
     @api.multi
@@ -313,6 +346,16 @@ class HrLoan(models.Model):
             res.append((loan.id, name))
         return res
 
+    @api.model
+    def create(self, values):
+        _super = super(LoanCommon, self)
+        result = _super.create(values)
+        sequence = result._create_sequence()
+        result.write({
+            "name": sequence,
+        })
+        return result
+
     @api.multi
     def unlink(self):
         for loan in self:
@@ -324,18 +367,20 @@ class HrLoan(models.Model):
                     loan.name != "/") and \
                     not self.env.context.get("force_unlink", False):
                 raise UserError(strWarning)
-        return super(HrLoan, self).unlink()
+        return super(LoanCommon, self).unlink()
 
     @api.multi
     def action_compute_payment(self):
         for loan in self:
-            self._compute_payment()
+            loan._compute_payment()
 
     @api.multi
     def _compute_payment(self):
         self.ensure_one()
-        obj_payment = self.env["hr.loan.payment.schedule"]
-        obj_loan_type = self.env["hr.loan.type"]
+        schedule_object_name = self.payment_schedule_ids._name
+
+        obj_payment = self.env[schedule_object_name]
+        obj_loan_type = self.env["loan.type"]
 
         self.payment_schedule_ids.unlink()
 
@@ -344,7 +389,7 @@ class HrLoan(models.Model):
             self.interest,
             self.manual_loan_period,
             self.first_payment_date,
-            self.loan_type_id.interest_method)
+            self.type_id.interest_method)
 
         for payment_data in payment_datas:
             payment_data.update({"loan_id": self.id})
@@ -353,46 +398,44 @@ class HrLoan(models.Model):
     @api.multi
     def workflow_action_confirm(self):
         for loan in self:
-            data = self._prepare_confirm_data()
+            data = loan._prepare_confirm_data()
             loan.write(data)
 
     @api.multi
     def workflow_action_approve(self):
         for loan in self:
             loan._compute_payment()
-            data = self._prepare_approve_data()
+            data = loan._prepare_approve_data()
             loan.write(data)
-            loan._create_receivable_move()
 
     @api.multi
     def workflow_action_active(self):
         for loan in self:
-            data = self._prepare_active_data()
+            data = loan._prepare_active_data()
             loan.write(data)
 
     @api.multi
     def workflow_action_done(self):
         for loan in self:
-            data = self._prepare_done_data()
+            data = loan._prepare_done_data()
             loan.write(data)
 
     @api.multi
     def workflow_action_cancel(self):
         for loan in self:
-            if not self._can_cancel():
-                strWarning = _("Employee loan can only be cancelled on "
+            if not loan._can_cancel():
+                strWarning = _("Loan can only be cancelled on "
                                "draft, waiting for approval or "
                                "ready to be process state")
                 raise models.ValidationError(strWarning)
-            self._delete_receivable_move()
-            data = self._prepare_cancel_data()
+            loan._delete_receivable_move()
+            data = loan._prepare_cancel_data()
             loan.write(data)
 
     @api.multi
     def _prepare_confirm_data(self):
         self.ensure_one()
         return {
-            "name": self._create_sequence(),
             "state": "confirm",
             "confirm_date": fields.datetime.now(),
             "confirm_uid": self.env.user.id,
@@ -409,11 +452,15 @@ class HrLoan(models.Model):
     @api.multi
     def _prepare_approve_data(self):
         self.ensure_one()
+        move_id, move_line_header_id = self._create_realization_move()
         data = {
             "state": "approve",
             "approve_date": fields.datetime.now(),
             "approve_uid": self.env.user.id,
+            "move_realization_id": move_id,
+            "move_line_header_id": move_line_header_id,
         }
+
         if not self.date_realization:
             data.update({
                 "date_realization": fields.datetime.now(),
@@ -421,13 +468,7 @@ class HrLoan(models.Model):
         return data
 
     @api.multi
-    def _delete_receivable_move(self):
-        self.ensure_one()
-        if self.move_receivable_id:
-            self.move_receivable_id.unlink()
-
-    @api.multi
-    def _create_receivable_move(self):
+    def _create_realization_move(self):
         self.ensure_one()
         obj_move = self.env[
             "account.move"]
@@ -435,17 +476,31 @@ class HrLoan(models.Model):
             "account.move.line"]
 
         move = obj_move.sudo().create(
-            self._prepare_receivable_move())
+            self._prepare_realization_move())
 
-        self.move_receivable_id = move
-
-        header = obj_line.sudo().create(
-            self._prepare_header_move_line())
-
-        self.move_line_header_id = header
+        move_line_header = obj_line.sudo().create(
+            self._prepare_header_move_line(move))
 
         for schedule in self.payment_schedule_ids:
-            schedule._create_principle_receivable_move_line()
+            schedule._create_principle_receivable_move_line(move)
+
+        debit = credit = 0.0
+        for line in move.line_id:
+            debit += line.debit
+            credit += line.credit
+
+        if debit != credit:
+            amount = abs(debit - credit)
+            obj_line.sudo().create(
+                self._prepare_rounding_move_line(move, amount))
+
+        return move.id, move_line_header.id
+
+    @api.multi
+    def _delete_receivable_move(self):
+        self.ensure_one()
+        if self.move_realization_id:
+            self.move_realization_id.unlink()
 
     @api.multi
     def _prepare_active_data(self):
@@ -481,12 +536,12 @@ class HrLoan(models.Model):
         return self.env["ir.sequence"].get("hr.loan")
 
     @api.multi
-    def _prepare_receivable_move(self):
+    def _prepare_realization_move(self):
         self.ensure_one()
         obj_period = self.env["account.period"]
         res = {
             "name": "/",
-            "journal_id": self.loan_type_id.journal_id.id,
+            "journal_id": self.type_id.realization_journal_id.id,
             "date": self.date_realization,
             "ref": self.name,
             "period_id": obj_period.find(
@@ -495,282 +550,60 @@ class HrLoan(models.Model):
         return res
 
     @api.multi
-    def _get_employee_home_address(self):
+    def _get_realization_move_line_header_amount(self):
         self.ensure_one()
-        strWarning = _(
-            "Home addres not set for %s employee") % (self.employee_id.name)
-        if not self.employee_id.address_home_id:
-            raise UserError(strWarning)
-        return self.employee_id.address_home_id
+        debit = credit = 0.0
+        if self.direction == "out":
+            credit = self.total_principle_amount
+        else:
+            debit = self.total_principle_amount
+        return debit, credit
 
-    @api.model
-    def _prepare_header_move_line(self):
+    @api.multi
+    def _prepare_header_move_line(self, move):
         self.ensure_one()
         name = _("%s loan realization") % (self.name)
-        res = {
-            "move_id": self.move_receivable_id.id,
-            "name": name,
-            "account_id": self.loan_type_id.account_realization_id.id,
-            "debit": 0.0,
-            "credit": self.total_principle_amount,
-            "partner_id": self._get_employee_home_address().id,
-        }
-        return res
-
-
-class HrLoanPaymentSchedule(models.Model):
-    _name = "hr.loan.payment.schedule"
-    _description = "Loan Payment Schedule"
-    _order = "schedule_date, id"
-
-    @api.multi
-    @api.depends("principle_amount", "interest_amount")
-    def _compute_installment(self):
-        for payment in self:
-            payment.installment_amount = payment.principle_amount + \
-                payment.interest_amount
-
-    @api.multi
-    @api.depends(
-        "principle_move_line_id",
-        "principle_move_line_id.reconcile_id",
-        "principle_move_line_id.reconcile_partial_id",
-        "interest_move_line_id",
-        "interest_move_line_id.reconcile_id",
-        "interest_move_line_id.reconcile_partial_id",
-    )
-    def _compute_state(self):
-        for payment in self:
-            principle_move_line = payment.principle_move_line_id
-            interest_move_line = payment.interest_move_line_id
-            if not principle_move_line:
-                payment.principle_payment_state = "unpaid"
-            elif principle_move_line and \
-                    not principle_move_line.reconcile_partial_id and \
-                    not principle_move_line.reconcile_id:
-                payment.principle_payment_state = "unpaid"
-            elif principle_move_line.reconcile_partial_id:
-                payment.principle_payment_state = "partial"
-            elif principle_move_line.reconcile_id:
-                payment.principle_payment_state = "paid"
-
-            if not interest_move_line:
-                payment.interest_payment_state = "unpaid"
-            elif interest_move_line and \
-                    not interest_move_line.reconcile_partial_id and \
-                    not interest_move_line.reconcile_id:
-                payment.interest_payment_state = "unpaid"
-            elif interest_move_line.reconcile_partial_id:
-                payment.interest_payment_state = "partial"
-            elif interest_move_line.reconcile_id:
-                payment.interest_payment_state = "paid"
-
-    loan_id = fields.Many2one(
-        string="# Loan",
-        comodel_name="hr.loan",
-        ondelete="cascade",
-    )
-    employee_id = fields.Many2one(
-        string="Employee",
-        comodel_name="hr.employee",
-        related="loan_id.employee_id",
-        store=True,
-        readonly=True,
-    )
-    currency_id = fields.Many2one(
-        string="Currency",
-        comodel_name="res.currency",
-        related="loan_id.currency_id",
-        store=False,
-        readonly=True,
-    )
-    schedule_date = fields.Date(
-        string="Schedule Date",
-        required=True,
-    )
-    principle_amount = fields.Float(
-        string="Principle Amount",
-        required=True,
-        digits=dp.get_precision("Account"),
-    )
-    interest_amount = fields.Float(
-        string="Interest Amount",
-        required=True,
-        digits=dp.get_precision("Account"),
-    )
-    installment_amount = fields.Float(
-        string="Installment Amount",
-        compute="_compute_installment",
-        store=True,
-        digits=dp.get_precision("Account"),
-    )
-    principle_payment_state = fields.Selection(
-        string="Principle Payment State",
-        selection=[
-            ("unpaid", "Unpaid"),
-            ("partial", "Partial Paid"),
-            ("paid", "Paid"),
-        ],
-        compute="_compute_state",
-        required=False,
-        store=True,
-    )
-    interest_payment_state = fields.Selection(
-        string="Interest Payment State",
-        selection=[
-            ("unpaid", "Unpaid"),
-            ("partial", "Partial Paid"),
-            ("paid", "Paid"),
-        ],
-        compute="_compute_state",
-        required=False,
-        store=True,
-    )
-    principle_move_line_id = fields.Many2one(
-        string="Principle Move Line",
-        comodel_name="account.move.line",
-        readonly=True,
-    )
-    principle_move_id = fields.Many2one(
-        string="Principle Move",
-        related="principle_move_line_id.move_id",
-        comodel_name="account.move",
-    )
-    interest_move_line_id = fields.Many2one(
-        string="Interest Move Line",
-        comodel_name="account.move.line",
-        readonly=True,
-    )
-    interest_move_id = fields.Many2one(
-        string="Interest Move",
-        related="interest_move_line_id.move_id",
-        comodel_name="account.move",
-    )
-    state = fields.Selection(
-        string="State",
-        selection=[
-            ("draft", "Draft"),
-            ("confirm", "Waiting for Approval"),
-            ("approve", "Waiting for Realization"),
-            ("active", "Active"),
-            ("done", "Done"),
-            ("cancel", "Cancelled"),
-        ],
-        readonly=True,
-        related="loan_id.state",
-        store=True,
-    )
-
-    @api.multi
-    def name_get(self):
-        res = []
-        for schedule in self:
-            name = "%s %s" % (
-                schedule.loan_id.display_name, schedule.schedule_date)
-            res.append((schedule.id, name))
-        return res
-
-    @api.multi
-    def action_realize_interest(self, date_realization=False):
-        for schedule in self:
-            self._create_interest_receivable_move(date_realization)
-
-    @api.multi
-    def _prepare_interest_receivable_move(self, date_realization):
-        self.ensure_one()
-        if not date_realization:
-            date_realization = datetime.now().strftime(
-                "%Y-%m-%d")
-        obj_period = self.env["account.period"]
-        loan = self.loan_id
-        res = {
-            "name": "/",
-            "journal_id": loan.loan_type_id.journal_id.id,
-            "date": date_realization,
-            "ref": loan.name,
-            "period_id": obj_period.find(
-                date_realization)[0].id,
-        }
-        return res
-
-    @api.multi
-    def _create_interest_receivable_move(self, date_realization):
-        self.ensure_one()
-        obj_move = self.env[
-            "account.move"]
-        obj_line = self.env[
-            "account.move.line"]
-
-        move = obj_move.sudo().create(
-            self._prepare_interest_receivable_move(
-                date_realization))
-
-        line_receivable = obj_line.sudo().create(
-            self._prepare_interest_receivable_move_line(
-                move))
-
-        self.interest_move_line_id = line_receivable
-
-        obj_line.sudo().create(
-            self._prepare_interest_income_move_line(
-                move))
-
-    @api.multi
-    def _prepare_principle_receivable_move_line(self):
-        self.ensure_one()
-        loan = self.loan_id
-        loan_type = loan.loan_type_id
-        name = _("%s %s principle receivable") % (
-            loan.name, self.schedule_date)
-        res = {
-            "move_id": loan.move_receivable_id.id,
-            "name": name,
-            "account_id": loan_type.account_principle_id.id,
-            "debit": self.principle_amount,
-            "credit": 0.0,
-            "date_maturity": self.schedule_date,
-            "partner_id": loan.employee_id.address_home_id.id,
-        }
-        return res
-
-    @api.multi
-    def _create_principle_receivable_move_line(self):
-        self.ensure_one()
-        line = self.env[
-            "account.move.line"].sudo().create(
-                self._prepare_principle_receivable_move_line())
-        self.principle_move_line_id = line
-
-    @api.multi
-    def _prepare_interest_receivable_move_line(self, move):
-        self.ensure_one()
-        loan = self.loan_id
-        loan_type = loan.loan_type_id
-        name = _("%s %s interest receivable") % (loan.name, self.schedule_date)
+        debit, credit = \
+            self._get_realization_move_line_header_amount()
         res = {
             "move_id": move.id,
             "name": name,
-            "account_id": loan_type.account_interest_id.id,
-            "debit": self.interest_amount,
-            "credit": 0.0,
-            "date_maturity": self.schedule_date,
-            "partner_id": loan._get_employee_home_address().id,
+            "account_id": self.type_id.account_realization_id.id,
+            "debit": debit,
+            "credit": credit,
+            "partner_id": self.partner_id.id,
         }
         return res
 
     @api.multi
-    def _prepare_interest_income_move_line(self, move):
+    def _prepare_rounding_move_line(self, move, amount):
         self.ensure_one()
-        loan = self.loan_id
-        loan_type = loan.loan_type_id
-        name = _("%s %s interest income") % (loan.name, self.schedule_date)
+        name = _("%s loan rounding") % (self.name)
         res = {
             "move_id": move.id,
             "name": name,
-            "account_id": loan_type.account_interest_income_id.id,
-            "credit": self.interest_amount,
+            "account_id": self.type_id.account_rounding_id.id,
             "debit": 0.0,
-            "date_maturity": self.schedule_date,
-            "partner_id": self.loan_id.employee_id.address_home_id.id,
+            "credit": amount,
+            "partner_id": self.partner_id.id,
         }
         return res
+
+    @api.onchange("type_id")
+    def onchange_maximum_loan_amount(self):
+        self.maximum_loan_amount = 0.0
+        if self.type_id:
+            self.maximum_loan_amount = self.type_id.maximum_loan_amount
+
+    @api.onchange("type_id")
+    def onchange_maximum_installment_period(self):
+        self.maximum_installment_period = 0.0
+        if self.type_id:
+            self.maximum_installment_period = \
+                self.type_id.maximum_installment_period
+
+    @api.onchange("type_id")
+    def onchange_interest(self):
+        self.interest = 0.0
+        if self.type_id:
+            self.interest = self.type_id.interest_amount

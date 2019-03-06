@@ -6,8 +6,8 @@
 <data>
 
 <record id="realize_interest_view_form" model="ir.ui.view">
-    <field name="name">hr.loan.realize_interest form</field>
-    <field name="model">hr.loan.realize_interest</field>
+    <field name="name">loan.realize_interest form</field>
+    <field name="model">loan.realize_interest</field>
     <field name="arch" type="xml">
         <form string="Realize Interest">
             <group name="group_main" colspan="4" col="2">
@@ -28,7 +28,7 @@
 
 <record id="realize_interest_action" model="ir.actions.act_window">
     <field name="name">Realize Interest</field>
-    <field name="res_model">hr.loan.realize_interest</field>
+    <field name="res_model">loan.realize_interest</field>
     <field name="view_type">form</field>
     <field name="view_mode">form</field>
     <field name="target">new</field>

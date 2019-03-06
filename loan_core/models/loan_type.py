@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2016 OpenSynergy Indonesia
+# Copyright 2019 OpenSynergy Indonesia
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
 
 from openerp import models, fields, api
@@ -7,9 +7,9 @@ from dateutil import relativedelta
 from datetime import datetime
 
 
-class HrLoanType(models.Model):
-    _name = "hr.loan.type"
-    _description = "Employee Loan Type"
+class LoanType(models.Model):
+    _name = "loan.type"
+    _description = "Loan Type"
 
     @api.model
     def _default_currency_id(self):
@@ -30,6 +30,19 @@ class HrLoanType(models.Model):
     decription = fields.Text(
         string="Description",
     )
+    sequence_id = fields.Many2one(
+        string="Sequence",
+        comodel_name="ir.sequence",
+        company_dependent=True,
+    )
+    direction = fields.Selection(
+        string="Direction",
+        selection=[
+            ("in", "In"),
+            ("out", "Out"),
+        ],
+        required=True,
+    )
     interest_method = fields.Selection(
         string="Interest Method",
         selection=[
@@ -39,6 +52,7 @@ class HrLoanType(models.Model):
         ],
         required=True,
         default="anuity",
+        company_dependent=True,
     )
     currency_id = fields.Many2one(
         string="Currency",
@@ -48,33 +62,87 @@ class HrLoanType(models.Model):
     )
     interest_amount = fields.Float(
         string="Interest Amount",
+        company_dependent=True,
     )
     maximum_loan_amount = fields.Float(
         string="Maximum Loan Amount",
         required=True,
+        company_dependent=True,
     )
     maximum_installment_period = fields.Integer(
         string="Maximum Installment Period",
+        company_dependent=True,
     )
-    journal_id = fields.Many2one(
-        string="Journal",
+    realization_journal_id = fields.Many2one(
+        string="Realization Journal",
         comodel_name="account.journal",
+        company_dependent=True,
     )
     account_realization_id = fields.Many2one(
         string="Realization Account",
         comodel_name="account.account",
+        company_dependent=True,
+        help="Account that will server as cross-account for realization.\n\n"
+             "It will use as debit account for loan in or "
+             "credit account for loan out",
+    )
+    account_rounding_id = fields.Many2one(
+        string="Rounding Account",
+        comodel_name="account.account",
+        company_dependent=True,
+    )
+    interest_journal_id = fields.Many2one(
+        string="Interest Journal",
+        comodel_name="account.journal",
+        company_dependent=True,
     )
     account_interest_id = fields.Many2one(
         string="Interest Account",
         comodel_name="account.account",
+        company_dependent=True,
     )
     account_interest_income_id = fields.Many2one(
         string="Interest Income Account",
         comodel_name="account.account",
+        company_dependent=True,
     )
-    account_principle_id = fields.Many2one(
-        string="Principle Account",
+    short_account_principle_id = fields.Many2one(
+        string="Short-Term Principle Account",
         comodel_name="account.account",
+        company_dependent=True,
+    )
+    long_account_principle_id = fields.Many2one(
+        string="Long-Term Principle Account",
+        comodel_name="account.account",
+        company_dependent=True,
+    )
+    loan_confirm_group_ids = fields.Many2many(
+        string="Allow To Confirm Loan",
+        comodel_name="res.groups",
+        relation="rel_loan_type_2_loan_allowed_confirm",
+        column1="type_id",
+        column2="group_id",
+    )
+    loan_approve_group_ids = fields.Many2many(
+        string="Allow To Approve Loan",
+        comodel_name="res.groups",
+        relation="rel_loan_type_2_loan_allowed_approve",
+        column1="type_id",
+        column2="group_id",
+    )
+    loan_cancel_group_ids = fields.Many2many(
+        string="Allow To Cancel Loan",
+        comodel_name="res.groups",
+        relation="rel_loan_type_2_loan_allowed_cancel",
+        column1="type_id",
+        column2="group_id",
+    )
+    loan_restart_group_ids = fields.Many2many(
+        string="Allow To Restart Loan",
+        comodel_name="res.groups",
+        relation="rel_loan_type_2_loan_allowed_restart",
+        column1="type_id",
+        column2="group_id",
     )
 
     @api.model
