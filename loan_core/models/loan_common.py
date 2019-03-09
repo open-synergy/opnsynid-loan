@@ -539,10 +539,15 @@ class LoanCommon(models.AbstractModel):
     def _prepare_realization_move(self):
         self.ensure_one()
         obj_period = self.env["account.period"]
+        if not self.date_realization:
+            date_realization = fields.datetime.now()
+        else:
+            date_realization = self.date_realization
+
         res = {
             "name": "/",
             "journal_id": self.type_id.realization_journal_id.id,
-            "date": self.date_realization,
+            "date": date_realization,
             "ref": self.name,
             "period_id": obj_period.find(
                 self.date_realization)[0].id,
