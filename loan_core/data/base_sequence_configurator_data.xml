@@ -5,6 +5,7 @@
 <openerp>
 <data>
 
+<!-- Loan in -->
 <record id="base_sequence_loan_in" model="base.sequence_configurator">
     <field name="model_id" ref="loan_core.model_loan_in"/>
     <field name="sequence_field_id" search="[('model_id.model','=','loan.in'),('name','=','name')]"/>
@@ -17,10 +18,18 @@
     <field name="sequence_computation_code">result = document.type_id.sequence_id</field>
 </record>
 
-<!-- <record id="base_sequence_loan_out" model="base.sequence_configurator">
+<!-- Loan Out -->
+<record id="base_sequence_loan_out" model="base.sequence_configurator">
     <field name="model_id" ref="loan_core.model_loan_out"/>
     <field name="sequence_field_id" search="[('model_id.model','=','loan.out'),('name','=','name')]"/>
     <field name="fallback_sequence_id" ref="loan_core.seq_loan"/>
-</record> -->
+</record>
+
+<record id="base_sequence_loan_out_line" model="base.sequence_configurator_line">
+    <field name="generator_id" ref="loan_core.base_sequence_loan_out"/>
+    <field name="sequence" eval="1"/>
+    <field name="sequence_computation_code">result = document.type_id.sequence_id</field>
+</record>
+
 </data>
 </openerp>

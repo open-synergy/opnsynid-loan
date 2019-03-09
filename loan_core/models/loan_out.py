@@ -7,7 +7,7 @@ from openerp import models, fields, api
 
 class LoanOut(models.Model):
     _name = "loan.out"
-    _description = "Loan In"
+    _description = "Loan Out"
     _inherit = ["loan.common"]
 
     @api.multi
