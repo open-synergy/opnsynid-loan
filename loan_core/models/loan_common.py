@@ -47,16 +47,18 @@ class LoanCommon(models.AbstractModel):
     def _compute_first_payment_date(self):
         for loan in self:
             date_payment = loan.date_payment
+            anchor_date = False
 
-            if loan.realization_date:
+            if loan.date_realization:
                 anchor_date = datetime.strptime(
                     loan.date_realization, "%Y-%m-%d")
-            else:
+            elif loan.request_date:
                 anchor_date = datetime.strptime(loan.request_date, "%Y-%m-%d")
 
-            loan.first_payment_date = anchor_date + \
-                relativedelta.relativedelta(
-                    day=date_payment, months=+1)
+            if anchor_date:
+                loan.first_payment_date = anchor_date + \
+                    relativedelta.relativedelta(
+                        day=date_payment, months=+1)
 
     @api.multi
     def _compute_realization(self):
@@ -85,6 +87,7 @@ class LoanCommon(models.AbstractModel):
                 ("readonly", False),
             ],
         },
+        copy=False,
     )
     company_id = fields.Many2one(
         string="Company",
@@ -129,6 +132,7 @@ class LoanCommon(models.AbstractModel):
                 ("readonly", False),
             ],
         },
+        copy=False,
     )
     type_id = fields.Many2one(
         string="Loan Type",
@@ -166,6 +170,7 @@ class LoanCommon(models.AbstractModel):
     maximum_loan_amount = fields.Float(
         string="Maximum Loan Amount",
         readonly=True,
+        copy=False,
     )
     interest = fields.Float(
         string="Interest (p.a)",
@@ -180,6 +185,7 @@ class LoanCommon(models.AbstractModel):
     maximum_installment_period = fields.Integer(
         string="Maximum Installment Period",
         readonly=True,
+        copy=False,
     )
     manual_loan_period = fields.Integer(
         string="Loan Period",
@@ -201,6 +207,7 @@ class LoanCommon(models.AbstractModel):
         compute="_compute_first_payment_date",
         readonly=True,
         store=True,
+        copy=False,
     )
     total_principle_amount = fields.Float(
         string="Total Principle Amount",
@@ -221,64 +228,78 @@ class LoanCommon(models.AbstractModel):
         string="Payment Schedules",
         comodel_name="loan.payment_schedule_common",
         inverse_name="loan_id",
+        copy=False,
     )
     confirm_date = fields.Datetime(
         string="Confirm Date",
         readonly=True,
+        copy=False,
     )
     confirm_uid = fields.Many2one(
         string="Confirm By",
         comodel_name="res.users",
         readonly=True,
+        copy=False,
     )
     approve_date = fields.Datetime(
         string="Approve Date",
         readonly=True,
+        copy=False,
     )
     approve_uid = fields.Many2one(
         string="Approve By",
         comodel_name="res.users",
         readonly=True,
+        copy=False,
     )
     realization_date = fields.Datetime(
         string="Realization Date",
         readonly=True,
+        copy=False,
     )
     realization_uid = fields.Many2one(
         string="Realized By",
         comodel_name="res.users",
         readonly=True,
+        copy=False,
     )
     done_date = fields.Date(
         string="Done Date",
         readonly=True,
+        copy=False,
     )
     done_uid = fields.Many2one(
         string="Done By",
         comodel_name="res.users",
         readonly=True,
+        copy=False,
     )
     cancel_date = fields.Date(
         string="Cancel Date",
         readonly=True,
+        copy=False,
     )
     cancel_uid = fields.Many2one(
         string="Cancel By",
         comodel_name="res.users",
         readonly=True,
+        copy=False,
     )
     manual_realization = fields.Boolean(
         string="Manual Realization",
+        copy=False,
     )
     move_realization_id = fields.Many2one(
         string="Realization Journal Entry",
         comodel_name="account.move",
         readonly=True,
+        copy=False,
     )
     move_line_header_id = fields.Many2one(
         string="Realization Move Line Header",
         comodel_name="account.move.line",
         readonly=True,
+        copy=False,
     )
     state = fields.Selection(
         string="State",
@@ -293,6 +314,7 @@ class LoanCommon(models.AbstractModel):
         default="draft",
         required=True,
         readonly=True,
+        copy=False,
     )
     # Policy Fields
     confirm_ok = fields.Boolean(
@@ -335,16 +357,16 @@ class LoanCommon(models.AbstractModel):
                 strWarning = _("Loan period exceed maximum installment period")
                 raise models.ValidationError(strWarning)
 
-    @api.multi
-    def name_get(self):
-        res = []
-        for loan in self:
-            if loan.name == "/":
-                name = "*%s" % (loan.id)
-            else:
-                name = loan.name
-            res.append((loan.id, name))
-        return res
+    # @api.multi
+    # def name_get(self):
+    #     res = []
+    #     for loan in self:
+    #         if loan.name == "/":
+    #             name = "*%s" % (loan.id)
+    #         else:
+    #             name = loan.name
+    #         res.append((loan.id, name))
+    #     return res
 
     @api.model
     def create(self, values):
@@ -529,11 +551,6 @@ class LoanCommon(models.AbstractModel):
             "cancel_date": fields.datetime.now(),
             "cancel_uid": self.env.user.id,
         }
-
-    @api.multi
-    def _create_sequence(self):
-        self.ensure_one()
-        return self.env["ir.sequence"].get("hr.loan")
 
     @api.multi
     def _prepare_realization_move(self):

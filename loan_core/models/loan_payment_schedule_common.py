@@ -53,33 +53,40 @@ class LoanPaymentScheduleCommon(models.AbstractModel):
         string="# Loan",
         comodel_name="loan.common",
         ondelete="cascade",
+        copy=False,
     )
     partner_id = fields.Many2one(
         string="Partner",
         comodel_name="res.partner",
         readonly=True,
+        copy=False,
     )
     currency_id = fields.Many2one(
         string="Currency",
         comodel_name="res.currency",
         readonly=True,
+        copy=False,
     )
     schedule_date = fields.Date(
         string="Schedule Date",
         required=True,
+        copy=False,
     )
     principle_amount = fields.Float(
         string="Principle Amount",
         required=True,
+        copy=False,
     )
     interest_amount = fields.Float(
         string="Interest Amount",
         required=True,
+        copy=False,
     )
     installment_amount = fields.Float(
         string="Installment Amount",
         compute="_compute_installment",
         store=True,
+        copy=False,
     )
     principle_payment_state = fields.Selection(
         string="Principle Payment State",
@@ -91,6 +98,7 @@ class LoanPaymentScheduleCommon(models.AbstractModel):
         compute="_compute_state",
         required=False,
         store=True,
+        copy=False,
     )
     interest_payment_state = fields.Selection(
         string="Interest Payment State",
@@ -102,29 +110,35 @@ class LoanPaymentScheduleCommon(models.AbstractModel):
         compute="_compute_state",
         required=False,
         store=True,
+        copy=False,
     )
     principle_move_line_id = fields.Many2one(
         string="Principle Move Line",
         comodel_name="account.move.line",
         readonly=True,
+        copy=False,
     )
     old_principle_move_line_id = fields.Many2one(
         string="Old Principle Move Line",
         comodel_name="account.move.line",
         readonly=True,
+        copy=False,
     )
     principle_move_id = fields.Many2one(
         string="Principle Move",
         comodel_name="account.move",
+        copy=False,
     )
     interest_move_line_id = fields.Many2one(
         string="Interest Move Line",
         comodel_name="account.move.line",
         readonly=True,
+        copy=False,
     )
     interest_move_id = fields.Many2one(
         string="Interest Move",
         comodel_name="account.move",
+        copy=False,
     )
     state = fields.Selection(
         string="State",
@@ -137,6 +151,7 @@ class LoanPaymentScheduleCommon(models.AbstractModel):
             ("cancel", "Cancelled"),
         ],
         readonly=True,
+        copy=False,
     )
 
     @api.multi
