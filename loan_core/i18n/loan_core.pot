@@ -26,38 +26,38 @@ msgid "# Loan"
 msgstr ""
 
 #. module: loan_core
-#: code:addons/loan_core/models/loan_payment_schedule_common.py:295
+#: code:addons/loan_core/models/loan_payment_schedule_common.py:310
 #, python-format
 msgid "%s %s interest income"
 msgstr ""
 
 #. module: loan_core
-#: code:addons/loan_core/models/loan_payment_schedule_common.py:264
+#: code:addons/loan_core/models/loan_payment_schedule_common.py:279
 #, python-format
 msgid "%s %s interest receivable"
 msgstr ""
 
 #. module: loan_core
-#: code:addons/loan_core/models/loan_payment_schedule_common.py:378
-#: code:addons/loan_core/models/loan_payment_schedule_common.py:395
+#: code:addons/loan_core/models/loan_payment_schedule_common.py:393
+#: code:addons/loan_core/models/loan_payment_schedule_common.py:410
 #, python-format
 msgid "%s %s long to short"
 msgstr ""
 
 #. module: loan_core
-#: code:addons/loan_core/models/loan_payment_schedule_common.py:223
+#: code:addons/loan_core/models/loan_payment_schedule_common.py:238
 #, python-format
 msgid "%s %s principle receivable"
 msgstr ""
 
 #. module: loan_core
-#: code:addons/loan_core/models/loan_common.py:570
+#: code:addons/loan_core/models/loan_common.py:587
 #, python-format
 msgid "%s loan realization"
 msgstr ""
 
 #. module: loan_core
-#: code:addons/loan_core/models/loan_common.py:586
+#: code:addons/loan_core/models/loan_common.py:603
 #, python-format
 msgid "%s loan rounding"
 msgstr ""
@@ -342,7 +342,7 @@ msgid "Can Restart"
 msgstr ""
 
 #. module: loan_core
-#: code:addons/loan_core/models/loan_payment_schedule_common.py:312
+#: code:addons/loan_core/models/loan_payment_schedule_common.py:327
 #, python-format
 msgid "Can not convert long term into short term"
 msgstr ""
@@ -814,7 +814,6 @@ msgstr ""
 #. module: loan_core
 #: model:ir.actions.act_window,name:loan_core.loan_in_action
 #: model:ir.model,name:loan_core.model_loan_in
-#: model:ir.model,name:loan_core.model_loan_out
 #: model:ir.ui.menu,name:loan_core.loan_in_menu
 #: view:loan.config_setting:loan_core.loan_config_setting_view_form
 msgid "Loan In"
@@ -839,6 +838,7 @@ msgstr ""
 
 #. module: loan_core
 #: model:ir.actions.act_window,name:loan_core.loan_out_action
+#: model:ir.model,name:loan_core.model_loan_out
 #: model:ir.ui.menu,name:loan_core.loan_out_menu
 #: view:loan.config_setting:loan_core.loan_config_setting_view_form
 msgid "Loan Out"
@@ -900,31 +900,31 @@ msgid "Loan Type and Code"
 msgstr ""
 
 #. module: loan_core
-#: code:addons/loan_core/models/loan_common.py:324
+#: code:addons/loan_core/models/loan_common.py:346
 #, python-format
 msgid "Loan amount exceed maximum loan amount"
 msgstr ""
 
 #. module: loan_core
-#: code:addons/loan_core/models/loan_common.py:320
+#: code:addons/loan_core/models/loan_common.py:342
 #, python-format
 msgid "Loan amount has to be greater than 0"
 msgstr ""
 
 #. module: loan_core
-#: code:addons/loan_core/models/loan_common.py:427
+#: code:addons/loan_core/models/loan_common.py:449
 #, python-format
 msgid "Loan can only be cancelled on draft, waiting for approval or ready to be process state"
 msgstr ""
 
 #. module: loan_core
-#: code:addons/loan_core/models/loan_common.py:335
+#: code:addons/loan_core/models/loan_common.py:357
 #, python-format
 msgid "Loan period exceed maximum installment period"
 msgstr ""
 
 #. module: loan_core
-#: code:addons/loan_core/models/loan_common.py:332
+#: code:addons/loan_core/models/loan_common.py:354
 #, python-format
 msgid "Loan period has to be greated than 0"
 msgstr ""
@@ -1341,7 +1341,7 @@ msgid "Workflow Policy"
 msgstr ""
 
 #. module: loan_core
-#: code:addons/loan_core/models/loan_common.py:362
+#: code:addons/loan_core/models/loan_common.py:384
 #, python-format
 msgid "You can not delete loan %s. \n"
 "\n"
