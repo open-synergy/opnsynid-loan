@@ -357,17 +357,6 @@ class LoanCommon(models.AbstractModel):
                 strWarning = _("Loan period exceed maximum installment period")
                 raise models.ValidationError(strWarning)
 
-    # @api.multi
-    # def name_get(self):
-    #     res = []
-    #     for loan in self:
-    #         if loan.name == "/":
-    #             name = "*%s" % (loan.id)
-    #         else:
-    #             name = loan.name
-    #         res.append((loan.id, name))
-    #     return res
-
     @api.model
     def create(self, values):
         _super = super(LoanCommon, self)
@@ -553,6 +542,17 @@ class LoanCommon(models.AbstractModel):
         }
 
     @api.multi
+    def _get_realization_journal(self):
+        self.ensure_one()
+        journal = self.type_id.realization_journal_id
+
+        if not journal:
+            msg = _("No realization journal defined")
+            raise UserError(msg)
+
+        return journal
+
+    @api.multi
     def _prepare_realization_move(self):
         self.ensure_one()
         obj_period = self.env["account.period"]
@@ -563,7 +563,7 @@ class LoanCommon(models.AbstractModel):
 
         res = {
             "name": "/",
-            "journal_id": self.type_id.realization_journal_id.id,
+            "journal_id": self._get_realization_journal().id,
             "date": date_realization,
             "ref": self.name,
             "period_id": obj_period.find(
@@ -582,6 +582,17 @@ class LoanCommon(models.AbstractModel):
         return debit, credit
 
     @api.multi
+    def _get_realization_account(self):
+        self.ensure_one()
+        account = self.type_id.account_realization_id
+
+        if not account:
+            msg = _("No realization account defined")
+            raise UserError(msg)
+
+        return account
+
+    @api.multi
     def _prepare_header_move_line(self, move):
         self.ensure_one()
         name = _("%s loan realization") % (self.name)
@@ -590,12 +601,23 @@ class LoanCommon(models.AbstractModel):
         res = {
             "move_id": move.id,
             "name": name,
-            "account_id": self.type_id.account_realization_id.id,
+            "account_id": self._get_realization_account().id,
             "debit": debit,
             "credit": credit,
             "partner_id": self.partner_id.id,
         }
         return res
+
+    @api.multi
+    def _get_rounding_account(self):
+        self.ensure_one()
+        account = self.type_id.account_rounding_id
+
+        if not account:
+            msg = _("No rounding account defined")
+            raise UserError(msg)
+
+        return account
 
     @api.multi
     def _prepare_rounding_move_line(self, move, amount):
@@ -604,7 +626,7 @@ class LoanCommon(models.AbstractModel):
         res = {
             "move_id": move.id,
             "name": name,
-            "account_id": self.type_id.account_rounding_id.id,
+            "account_id": self._get_rounding_account().id,
             "debit": 0.0,
             "credit": amount,
             "partner_id": self.partner_id.id,

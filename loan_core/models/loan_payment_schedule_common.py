@@ -169,6 +169,18 @@ class LoanPaymentScheduleCommon(models.AbstractModel):
             schedule._create_interest_realization_move(date_realization)
 
     @api.multi
+    def _get_interest_journal(self):
+        self.ensure_one()
+        loan = self.loan_id
+        journal = loan.type_id.interest_journal_id
+
+        if not journal:
+            msg = _("No interest journal defined")
+            raise UserError(msg)
+
+        return journal
+
+    @api.multi
     def _prepare_interest_realization_move(self, date_realization=False):
         self.ensure_one()
         if not date_realization:
@@ -177,7 +189,7 @@ class LoanPaymentScheduleCommon(models.AbstractModel):
         loan = self.loan_id
         res = {
             "name": "/",
-            "journal_id": loan.type_id.interest_journal_id.id,
+            "journal_id": self._get_interest_journal().id,
             "date": date_realization,
             "ref": loan.name,
             "period_id": obj_period.find(
@@ -227,8 +239,14 @@ class LoanPaymentScheduleCommon(models.AbstractModel):
         account = False
         if abs((dt_schedule - dt_today).days) > 365:
             account = loan.type_id.long_account_principle_id
+            if not account:
+                msg = _("No long-term principle account defined")
+                raise UserError(msg)
         else:
             account = loan.type_id.short_account_principle_id
+            if not account:
+                msg = _("No short-term principle account defined")
+                raise UserError(msg)
         return account
 
     @api.multi
@@ -303,16 +321,27 @@ class LoanPaymentScheduleCommon(models.AbstractModel):
         return debit, credit
 
     @api.multi
+    def _get_interest_income_account(self):
+        self.ensure_one()
+        loan = self.loan_id
+        account = loan.type_id.account_interest_income_id
+
+        if not account:
+            msg = _("No interest income account defined")
+            raise UserError(msg)
+
+        return account
+
+    @api.multi
     def _prepare_interest_income_move_line(self, move):
         self.ensure_one()
         loan = self.loan_id
-        loan_type = loan.type_id
         name = _("%s %s interest income") % (loan.name, self.schedule_date)
         debit, credit = self._get_interest_move_line_amount()
         res = {
             "move_id": move.id,
             "name": name,
-            "account_id": loan_type.account_interest_income_id.id,
+            "account_id": self._get_interest_income_account().id,
             "credit": credit,
             "debit": debit,
             "date_maturity": self.schedule_date,
@@ -370,6 +399,18 @@ class LoanPaymentScheduleCommon(models.AbstractModel):
         return line
 
     @api.multi
+    def _get_interest_realization_journal(self):
+        self.ensure_one()
+        loan = self.loan_id
+        journal = loan.type_id.realization_journal_id
+
+        if not journal:
+            msg = _("No interest realization journal defined")
+            raise UserError(msg)
+
+        return journal
+
+    @api.multi
     def _prepare_new_principle_move(self):
         self.ensure_one()
         date_entry = self.schedule_date
@@ -377,7 +418,7 @@ class LoanPaymentScheduleCommon(models.AbstractModel):
         obj_period = self.env["account.period"]
         res = {
             "name": "/",
-            "journal_id": loan.type_id.realization_journal_id.id,
+            "journal_id": self._get_interest_realization_journal().id,
             "date": date_entry,
             "ref": loan.name,
             "period_id": obj_period.find(
@@ -386,15 +427,26 @@ class LoanPaymentScheduleCommon(models.AbstractModel):
         return res
 
     @api.multi
+    def _get_short_term_principle_account(self):
+        self.ensure_one()
+        loan = self.loan_id
+        account = loan.type_id.short_account_principle_id
+
+        if not account:
+            msg = _("No short-term principle account defined")
+            raise UserError(msg)
+
+        return account
+
+    @api.multi
     def _prepare_short_new_principle_move_line(self, move):
         self.ensure_one()
         loan = self.loan_id
-        loan_type = loan.type_id
         name = _("%s %s long to short") % (loan.name, self.schedule_date)
         res = {
             "move_id": move.id,
             "name": name,
-            "account_id": loan_type.short_account_principle_id.id,
+            "account_id": self._get_short_term_principle_account().id,
             "credit": self.principle_amount,
             "debit": 0.0,
             "date_maturity": self.schedule_date,
@@ -403,15 +455,26 @@ class LoanPaymentScheduleCommon(models.AbstractModel):
         return res
 
     @api.multi
+    def _get_long_term_principle_account(self):
+        self.ensure_one()
+        loan = self.loan_id
+        account = loan.type_id.long_account_principle_id
+
+        if not account:
+            msg = _("No long-term principle account defined")
+            raise UserError(msg)
+
+        return account
+
+    @api.multi
     def _prepare_long_new_principle_move_line(self, move):
         self.ensure_one()
         loan = self.loan_id
-        loan_type = loan.type_id
         name = _("%s %s long to short") % (loan.name, self.schedule_date)
         res = {
             "move_id": move.id,
             "name": name,
-            "account_id": loan_type.long_account_principle_id.id,
+            "account_id": self._get_long_term_principle_account().id,
             "debit": self.principle_amount,
             "credit": 0.0,
             "date_maturity": self.schedule_date,
