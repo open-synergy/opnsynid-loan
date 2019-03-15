@@ -58,7 +58,7 @@ class LoanType(models.Model):
         string="Currency",
         comodel_name="res.currency",
         required=True,
-        default=_default_currency_id,
+        default=lambda self: self._default_currency_id(),
     )
     interest_amount = fields.Float(
         string="Interest Amount",
@@ -77,11 +77,18 @@ class LoanType(models.Model):
         string="Realization Journal",
         comodel_name="account.journal",
         company_dependent=True,
+        domain=[
+            ("type", "=", "general"),
+        ],
     )
     account_realization_id = fields.Many2one(
         string="Realization Account",
         comodel_name="account.account",
         company_dependent=True,
+        domain=[
+            ("type", "not in", ["view", "consolidation", "closed"]),
+            ("reconcile", "=", True),
+        ],
         help="Account that will server as cross-account for realization.\n\n"
              "It will use as debit account for loan in or "
              "credit account for loan out",
@@ -90,31 +97,52 @@ class LoanType(models.Model):
         string="Rounding Account",
         comodel_name="account.account",
         company_dependent=True,
+        domain=[
+            ("type", "=", "other"),
+        ],
     )
     interest_journal_id = fields.Many2one(
         string="Interest Journal",
         comodel_name="account.journal",
         company_dependent=True,
+        domain=[
+            ("type", "=", "general"),
+        ],
     )
     account_interest_id = fields.Many2one(
         string="Interest Account",
         comodel_name="account.account",
         company_dependent=True,
+        domain=[
+            ("type", "not in", ["view", "consolidation", "closed"]),
+            ("reconcile", "=", True),
+        ],
     )
     account_interest_income_id = fields.Many2one(
         string="Interest Income Account",
         comodel_name="account.account",
         company_dependent=True,
+        domain=[
+            ("type", "=", "other"),
+        ],
     )
     short_account_principle_id = fields.Many2one(
         string="Short-Term Principle Account",
         comodel_name="account.account",
         company_dependent=True,
+        domain=[
+            ("type", "=", "other"),
+            ("reconcile", "=", True),
+        ],
     )
     long_account_principle_id = fields.Many2one(
         string="Long-Term Principle Account",
         comodel_name="account.account",
         company_dependent=True,
+        domain=[
+            ("type", "=", "other"),
+            ("reconcile", "=", True),
+        ],
     )
     loan_confirm_group_ids = fields.Many2many(
         string="Allow To Confirm Loan",
