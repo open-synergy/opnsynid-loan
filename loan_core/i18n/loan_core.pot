@@ -26,38 +26,38 @@ msgid "# Loan"
 msgstr ""
 
 #. module: loan_core
-#: code:addons/loan_core/models/loan_payment_schedule_common.py:310
+#: code:addons/loan_core/models/loan_payment_schedule_common.py:339
 #, python-format
 msgid "%s %s interest income"
 msgstr ""
 
 #. module: loan_core
-#: code:addons/loan_core/models/loan_payment_schedule_common.py:279
+#: code:addons/loan_core/models/loan_payment_schedule_common.py:297
 #, python-format
 msgid "%s %s interest receivable"
 msgstr ""
 
 #. module: loan_core
-#: code:addons/loan_core/models/loan_payment_schedule_common.py:393
-#: code:addons/loan_core/models/loan_payment_schedule_common.py:410
+#: code:addons/loan_core/models/loan_payment_schedule_common.py:445
+#: code:addons/loan_core/models/loan_payment_schedule_common.py:473
 #, python-format
 msgid "%s %s long to short"
 msgstr ""
 
 #. module: loan_core
-#: code:addons/loan_core/models/loan_payment_schedule_common.py:238
+#: code:addons/loan_core/models/loan_payment_schedule_common.py:256
 #, python-format
 msgid "%s %s principle receivable"
 msgstr ""
 
 #. module: loan_core
-#: code:addons/loan_core/models/loan_common.py:587
+#: code:addons/loan_core/models/loan_common.py:598
 #, python-format
 msgid "%s loan realization"
 msgstr ""
 
 #. module: loan_core
-#: code:addons/loan_core/models/loan_common.py:603
+#: code:addons/loan_core/models/loan_common.py:625
 #, python-format
 msgid "%s loan rounding"
 msgstr ""
@@ -342,7 +342,7 @@ msgid "Can Restart"
 msgstr ""
 
 #. module: loan_core
-#: code:addons/loan_core/models/loan_payment_schedule_common.py:327
+#: code:addons/loan_core/models/loan_payment_schedule_common.py:356
 #, python-format
 msgid "Can not convert long term into short term"
 msgstr ""
@@ -912,7 +912,7 @@ msgid "Loan amount has to be greater than 0"
 msgstr ""
 
 #. module: loan_core
-#: code:addons/loan_core/models/loan_common.py:449
+#: code:addons/loan_core/models/loan_common.py:438
 #, python-format
 msgid "Loan can only be cancelled on draft, waiting for approval or ready to be process state"
 msgstr ""
@@ -972,9 +972,59 @@ msgid "Messages and communication history"
 msgstr ""
 
 #. module: loan_core
+#: code:addons/loan_core/models/loan_payment_schedule_common.py:330
+#, python-format
+msgid "No interest income account defined"
+msgstr ""
+
+#. module: loan_core
+#: code:addons/loan_core/models/loan_payment_schedule_common.py:178
+#, python-format
+msgid "No interest journal defined"
+msgstr ""
+
+#. module: loan_core
+#: code:addons/loan_core/models/loan_payment_schedule_common.py:408
+#, python-format
+msgid "No interest realization journal defined"
+msgstr ""
+
+#. module: loan_core
 #: code:addons/loan_core/wizard/realize_interest.py:28
 #, python-format
 msgid "No loan repayment schedule selected"
+msgstr ""
+
+#. module: loan_core
+#: code:addons/loan_core/models/loan_payment_schedule_common.py:243
+#: code:addons/loan_core/models/loan_payment_schedule_common.py:464
+#, python-format
+msgid "No long-term principle account defined"
+msgstr ""
+
+#. module: loan_core
+#: code:addons/loan_core/models/loan_common.py:590
+#, python-format
+msgid "No realization account defined"
+msgstr ""
+
+#. module: loan_core
+#: code:addons/loan_core/models/loan_common.py:550
+#, python-format
+msgid "No realization journal defined"
+msgstr ""
+
+#. module: loan_core
+#: code:addons/loan_core/models/loan_common.py:617
+#, python-format
+msgid "No rounding account defined"
+msgstr ""
+
+#. module: loan_core
+#: code:addons/loan_core/models/loan_payment_schedule_common.py:248
+#: code:addons/loan_core/models/loan_payment_schedule_common.py:436
+#, python-format
+msgid "No short-term principle account defined"
 msgstr ""
 
 #. module: loan_core
@@ -1341,7 +1391,7 @@ msgid "Workflow Policy"
 msgstr ""
 
 #. module: loan_core
-#: code:addons/loan_core/models/loan_common.py:384
+#: code:addons/loan_core/models/loan_common.py:373
 #, python-format
 msgid "You can not delete loan %s. \n"
 "\n"
