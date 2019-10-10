@@ -20,6 +20,7 @@ def migrate_first_payment_date_loan_in(env):
         );
         """)
 
+
 def migrate_first_payment_date_loan_out(env):
     openupgrade.logged_query(
         env.cr,
