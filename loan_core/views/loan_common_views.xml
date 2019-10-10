@@ -86,6 +86,11 @@
                     attrs="{'invisible':['|',('state','not in',['draft','confirm','approve','active']),('cancel_ok','=',False)]}"
                     confirm="Cancel loan. Are you sure?"
                     />
+                <button
+                    string="Select Realization Entry"
+                    name="%(loan_select_realization_entry_action)d"
+                    type="action"
+                    attrs="{'invisible': [('state', '!=', 'approve')]}"/>
                 <field name="state" widget="statusbar" statusbar_visible="draft,confirm,approve,active"/>
             </header>
             <sheet>
@@ -119,7 +124,6 @@
                     <page name="page_schedule" string="Repayment Terms">
                         <button name="action_compute_payment" type="object" string="Compute Payment" icon="gtk-execute" states="draft"/>
                         <group name="group_schedule_1" colspan="4" col="2">
-                            <field name="date_payment"/>
                             <field name="first_payment_date"/>
                             <field name="interest"/>
                             <field name="manual_loan_period"/>

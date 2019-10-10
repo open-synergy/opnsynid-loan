@@ -204,10 +204,13 @@ class LoanCommon(models.AbstractModel):
     )
     first_payment_date = fields.Date(
         string="First Payment Date",
-        compute="_compute_first_payment_date",
         readonly=True,
-        store=True,
-        copy=False,
+        required=True,
+        states={
+            "draft": [
+                ("readonly", False),
+            ],
+        },
     )
     total_principle_amount = fields.Float(
         string="Total Principle Amount",
