@@ -40,27 +40,6 @@ class LoanCommon(models.AbstractModel):
                     loan.total_interest_amount += schedule.interest_amount
 
     @api.multi
-    @api.depends(
-        "request_date",
-        "date_payment",
-        "realization_date")
-    def _compute_first_payment_date(self):
-        for loan in self:
-            date_payment = loan.date_payment
-            anchor_date = False
-
-            if loan.date_realization:
-                anchor_date = datetime.strptime(
-                    loan.date_realization, "%Y-%m-%d")
-            elif loan.request_date:
-                anchor_date = datetime.strptime(loan.request_date, "%Y-%m-%d")
-
-            if anchor_date:
-                loan.first_payment_date = anchor_date + \
-                    relativedelta.relativedelta(
-                        day=date_payment, months=+1)
-
-    @api.multi
     def _compute_realization(self):
         for loan in self:
             loan.realized = False
@@ -195,11 +174,6 @@ class LoanCommon(models.AbstractModel):
                 ("readonly", False),
             ],
         },
-        required=True,
-    )
-    date_payment = fields.Selection(
-        string="Date Payment",
-        selection=DATE_SELECTION,
         required=True,
     )
     first_payment_date = fields.Date(
