@@ -51,169 +51,15 @@ msgid "%s %s principle receivable"
 msgstr ""
 
 #. module: loan_core
-#: code:addons/loan_core/models/loan_common.py:601
+#: code:addons/loan_core/models/loan_common.py:575
 #, python-format
 msgid "%s loan realization"
 msgstr ""
 
 #. module: loan_core
-#: code:addons/loan_core/models/loan_common.py:628
+#: code:addons/loan_core/models/loan_common.py:602
 #, python-format
 msgid "%s loan rounding"
-msgstr ""
-
-#. module: loan_core
-#: selection:loan.common,date_payment:0
-#: selection:loan.in,date_payment:0
-#: selection:loan.out,date_payment:0
-msgid "10"
-msgstr ""
-
-#. module: loan_core
-#: selection:loan.common,date_payment:0
-#: selection:loan.in,date_payment:0
-#: selection:loan.out,date_payment:0
-msgid "11"
-msgstr ""
-
-#. module: loan_core
-#: selection:loan.common,date_payment:0
-#: selection:loan.in,date_payment:0
-#: selection:loan.out,date_payment:0
-msgid "12"
-msgstr ""
-
-#. module: loan_core
-#: selection:loan.common,date_payment:0
-#: selection:loan.in,date_payment:0
-#: selection:loan.out,date_payment:0
-msgid "13"
-msgstr ""
-
-#. module: loan_core
-#: selection:loan.common,date_payment:0
-#: selection:loan.in,date_payment:0
-#: selection:loan.out,date_payment:0
-msgid "14"
-msgstr ""
-
-#. module: loan_core
-#: selection:loan.common,date_payment:0
-#: selection:loan.in,date_payment:0
-#: selection:loan.out,date_payment:0
-msgid "15"
-msgstr ""
-
-#. module: loan_core
-#: selection:loan.common,date_payment:0
-#: selection:loan.in,date_payment:0
-#: selection:loan.out,date_payment:0
-msgid "16"
-msgstr ""
-
-#. module: loan_core
-#: selection:loan.common,date_payment:0
-#: selection:loan.in,date_payment:0
-#: selection:loan.out,date_payment:0
-msgid "17"
-msgstr ""
-
-#. module: loan_core
-#: selection:loan.common,date_payment:0
-#: selection:loan.in,date_payment:0
-#: selection:loan.out,date_payment:0
-msgid "18"
-msgstr ""
-
-#. module: loan_core
-#: selection:loan.common,date_payment:0
-#: selection:loan.in,date_payment:0
-#: selection:loan.out,date_payment:0
-msgid "19"
-msgstr ""
-
-#. module: loan_core
-#: selection:loan.common,date_payment:0
-#: selection:loan.in,date_payment:0
-#: selection:loan.out,date_payment:0
-msgid "20"
-msgstr ""
-
-#. module: loan_core
-#: selection:loan.common,date_payment:0
-#: selection:loan.in,date_payment:0
-#: selection:loan.out,date_payment:0
-msgid "21"
-msgstr ""
-
-#. module: loan_core
-#: selection:loan.common,date_payment:0
-#: selection:loan.in,date_payment:0
-#: selection:loan.out,date_payment:0
-msgid "22"
-msgstr ""
-
-#. module: loan_core
-#: selection:loan.common,date_payment:0
-#: selection:loan.in,date_payment:0
-#: selection:loan.out,date_payment:0
-msgid "23"
-msgstr ""
-
-#. module: loan_core
-#: selection:loan.common,date_payment:0
-#: selection:loan.in,date_payment:0
-#: selection:loan.out,date_payment:0
-msgid "24"
-msgstr ""
-
-#. module: loan_core
-#: selection:loan.common,date_payment:0
-#: selection:loan.in,date_payment:0
-#: selection:loan.out,date_payment:0
-msgid "25"
-msgstr ""
-
-#. module: loan_core
-#: selection:loan.common,date_payment:0
-#: selection:loan.in,date_payment:0
-#: selection:loan.out,date_payment:0
-msgid "26"
-msgstr ""
-
-#. module: loan_core
-#: selection:loan.common,date_payment:0
-#: selection:loan.in,date_payment:0
-#: selection:loan.out,date_payment:0
-msgid "27"
-msgstr ""
-
-#. module: loan_core
-#: selection:loan.common,date_payment:0
-#: selection:loan.in,date_payment:0
-#: selection:loan.out,date_payment:0
-msgid "28"
-msgstr ""
-
-#. module: loan_core
-#: selection:loan.common,date_payment:0
-#: selection:loan.in,date_payment:0
-#: selection:loan.out,date_payment:0
-msgid "29"
-msgstr ""
-
-#. module: loan_core
-#: selection:loan.common,date_payment:0
-#: selection:loan.in,date_payment:0
-#: selection:loan.out,date_payment:0
-msgid "30"
-msgstr ""
-
-#. module: loan_core
-#: selection:loan.common,date_payment:0
-#: selection:loan.in,date_payment:0
-#: selection:loan.out,date_payment:0
-msgid "31"
 msgstr ""
 
 #. module: loan_core
@@ -482,13 +328,6 @@ msgstr ""
 #: field:loan.payment_schedule_common,currency_id:0
 #: field:loan.type,currency_id:0
 msgid "Currency"
-msgstr ""
-
-#. module: loan_core
-#: field:loan.common,date_payment:0
-#: field:loan.in,date_payment:0
-#: field:loan.out,date_payment:0
-msgid "Date Payment"
 msgstr ""
 
 #. module: loan_core
@@ -913,31 +752,31 @@ msgid "Loan Type and Code"
 msgstr ""
 
 #. module: loan_core
-#: code:addons/loan_core/models/loan_common.py:349
+#: code:addons/loan_core/models/loan_common.py:323
 #, python-format
 msgid "Loan amount exceed maximum loan amount"
 msgstr ""
 
 #. module: loan_core
-#: code:addons/loan_core/models/loan_common.py:345
+#: code:addons/loan_core/models/loan_common.py:319
 #, python-format
 msgid "Loan amount has to be greater than 0"
 msgstr ""
 
 #. module: loan_core
-#: code:addons/loan_core/models/loan_common.py:441
+#: code:addons/loan_core/models/loan_common.py:415
 #, python-format
 msgid "Loan can only be cancelled on draft, waiting for approval or ready to be process state"
 msgstr ""
 
 #. module: loan_core
-#: code:addons/loan_core/models/loan_common.py:360
+#: code:addons/loan_core/models/loan_common.py:334
 #, python-format
 msgid "Loan period exceed maximum installment period"
 msgstr ""
 
 #. module: loan_core
-#: code:addons/loan_core/models/loan_common.py:357
+#: code:addons/loan_core/models/loan_common.py:331
 #, python-format
 msgid "Loan period has to be greated than 0"
 msgstr ""
@@ -1021,19 +860,19 @@ msgid "No long-term principle account defined"
 msgstr ""
 
 #. module: loan_core
-#: code:addons/loan_core/models/loan_common.py:593
+#: code:addons/loan_core/models/loan_common.py:567
 #, python-format
 msgid "No realization account defined"
 msgstr ""
 
 #. module: loan_core
-#: code:addons/loan_core/models/loan_common.py:553
+#: code:addons/loan_core/models/loan_common.py:527
 #, python-format
 msgid "No realization journal defined"
 msgstr ""
 
 #. module: loan_core
-#: code:addons/loan_core/models/loan_common.py:620
+#: code:addons/loan_core/models/loan_common.py:594
 #, python-format
 msgid "No rounding account defined"
 msgstr ""
@@ -1421,7 +1260,7 @@ msgid "Workflow Policy"
 msgstr ""
 
 #. module: loan_core
-#: code:addons/loan_core/models/loan_common.py:376
+#: code:addons/loan_core/models/loan_common.py:350
 #, python-format
 msgid "You can not delete loan %s. \n"
 "\n"
