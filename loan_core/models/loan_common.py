@@ -2,9 +2,9 @@
 # Copyright 2019 OpenSynergy Indonesia
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
 
-from openerp import models, fields, api
-from openerp.tools.translate import _
+from openerp import api, fields, models
 from openerp.exceptions import Warning as UserError
+from openerp.tools.translate import _
 
 DATE_SELECTION = map(lambda x: [x, str(x)], range(1, 32))
 
@@ -14,9 +14,13 @@ class LoanCommon(models.AbstractModel):
     _description = "Abstract Model for Loan"
     _inherit = [
         "mail.thread",
+        "tier.validation",
         "base.sequence_document",
         "base.workflow_policy_object",
+        "base.cancel.reason_common",
     ]
+    _state_from = ["draft", "confirm"]
+    _state_to = ["approve"]
 
     @api.model
     def _default_company_id(self):
@@ -26,7 +30,7 @@ class LoanCommon(models.AbstractModel):
     @api.depends(
         "payment_schedule_ids",
         "payment_schedule_ids.principle_amount",
-        "payment_schedule_ids.interest_amount"
+        "payment_schedule_ids.interest_amount",
     )
     def _compute_total(self):
         for loan in self:
@@ -296,8 +300,8 @@ class LoanCommon(models.AbstractModel):
         string="Can Confirm",
         compute="_compute_policy",
     )
-    approve_ok = fields.Boolean(
-        string="Can Approve",
+    restart_approval_ok = fields.Boolean(
+        string="Can Restart Approval",
         compute="_compute_policy",
     )
     cancel_ok = fields.Boolean(
@@ -337,21 +341,28 @@ class LoanCommon(models.AbstractModel):
         _super = super(LoanCommon, self)
         result = _super.create(values)
         sequence = result._create_sequence()
-        result.write({
-            "name": sequence,
-        })
+        result.write(
+            {
+                "name": sequence,
+            }
+        )
         return result
 
     @api.multi
     def unlink(self):
         for loan in self:
-            strWarning = _("""You can not delete loan %s. \n
+            strWarning = (
+                _(
+                    """You can not delete loan %s. \n
                          Loan can be deleted only on cancel state and
                          has not been assigned a
-                         loan number""") % loan.display_name
-            if (loan.state != "cancel" or
-                    loan.name != "/") and \
-                    not self.env.context.get("force_unlink", False):
+                         loan number"""
+                )
+                % loan.display_name
+            )
+            if (
+                loan.state != "cancel" or loan.name != "/"
+            ) and not self.env.context.get("force_unlink", False):
                 raise UserError(strWarning)
         return super(LoanCommon, self).unlink()
 
@@ -375,20 +386,28 @@ class LoanCommon(models.AbstractModel):
             self.interest,
             self.manual_loan_period,
             self.first_payment_date,
-            self.type_id.interest_method)
+            self.type_id.interest_method,
+        )
 
         for payment_data in payment_datas:
             payment_data.update({"loan_id": self.id})
             obj_payment.create(payment_data)
+
+    # @api.multi
+    # def workflow_action_confirm(self):
+    #     for loan in self:
+    #         data = loan._prepare_confirm_data()
+    #         loan.write(data)
 
     @api.multi
     def workflow_action_confirm(self):
         for loan in self:
             data = loan._prepare_confirm_data()
             loan.write(data)
+            loan.request_validation()
 
     @api.multi
-    def workflow_action_approve(self):
+    def action_approve(self):
         for loan in self:
             loan._compute_payment()
             data = loan._prepare_approve_data()
@@ -407,12 +426,14 @@ class LoanCommon(models.AbstractModel):
             loan.write(data)
 
     @api.multi
-    def workflow_action_cancel(self):
+    def action_cancel(self):
         for loan in self:
             if not loan._can_cancel():
-                strWarning = _("Loan can only be cancelled on "
-                               "draft, waiting for approval or "
-                               "ready to be process state")
+                strWarning = _(
+                    "Loan can only be cancelled on "
+                    "draft, waiting for approval or "
+                    "ready to be process state"
+                )
                 raise models.ValidationError(strWarning)
             loan._delete_receivable_move()
             data = loan._prepare_cancel_data()
@@ -448,24 +469,22 @@ class LoanCommon(models.AbstractModel):
         }
 
         if not self.date_realization:
-            data.update({
-                "date_realization": fields.datetime.now(),
-            })
+            data.update(
+                {
+                    "date_realization": fields.datetime.now(),
+                }
+            )
         return data
 
     @api.multi
     def _create_realization_move(self):
         self.ensure_one()
-        obj_move = self.env[
-            "account.move"]
-        obj_line = self.env[
-            "account.move.line"]
+        obj_move = self.env["account.move"]
+        obj_line = self.env["account.move.line"]
 
-        move = obj_move.sudo().create(
-            self._prepare_realization_move())
+        move = obj_move.sudo().create(self._prepare_realization_move())
 
-        move_line_header = obj_line.sudo().create(
-            self._prepare_header_move_line(move))
+        move_line_header = obj_line.sudo().create(self._prepare_header_move_line(move))
 
         for schedule in self.payment_schedule_ids:
             schedule._create_principle_receivable_move_line(move)
@@ -477,8 +496,7 @@ class LoanCommon(models.AbstractModel):
 
         if debit != credit:
             amount = abs(debit - credit)
-            obj_line.sudo().create(
-                self._prepare_rounding_move_line(move, amount))
+            obj_line.sudo().create(self._prepare_rounding_move_line(move, amount))
 
         return move.id, move_line_header.id
 
@@ -541,8 +559,7 @@ class LoanCommon(models.AbstractModel):
             "journal_id": self._get_realization_journal().id,
             "date": date_realization,
             "ref": self.name,
-            "period_id": obj_period.find(
-                self.date_realization)[0].id,
+            "period_id": obj_period.find(self.date_realization)[0].id,
         }
         return res
 
@@ -571,8 +588,7 @@ class LoanCommon(models.AbstractModel):
     def _prepare_header_move_line(self, move):
         self.ensure_one()
         name = _("%s loan realization") % (self.name)
-        debit, credit = \
-            self._get_realization_move_line_header_amount()
+        debit, credit = self._get_realization_move_line_header_amount()
         res = {
             "move_id": move.id,
             "name": name,
@@ -608,6 +624,21 @@ class LoanCommon(models.AbstractModel):
         }
         return res
 
+    @api.multi
+    def validate_tier(self):
+        _super = super(LoanCommon, self)
+        _super.validate_tier()
+        for record in self:
+            if record.validated:
+                record.action_approve()
+
+    @api.multi
+    def restart_validation(self):
+        _super = super(LoanCommon, self)
+        _super.restart_validation()
+        for record in self:
+            record.request_validation()
+
     @api.onchange("type_id")
     def onchange_maximum_loan_amount(self):
         self.maximum_loan_amount = 0.0
@@ -618,8 +649,7 @@ class LoanCommon(models.AbstractModel):
     def onchange_maximum_installment_period(self):
         self.maximum_installment_period = 0.0
         if self.type_id:
-            self.maximum_installment_period = \
-                self.type_id.maximum_installment_period
+            self.maximum_installment_period = self.type_id.maximum_installment_period
 
     @api.onchange("type_id")
     def onchange_interest(self):

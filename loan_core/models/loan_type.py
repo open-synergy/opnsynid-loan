@@ -2,9 +2,10 @@
 # Copyright 2019 OpenSynergy Indonesia
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
 
-from openerp import models, fields, api
-from dateutil import relativedelta
 from datetime import datetime
+
+from dateutil import relativedelta
+from openerp import api, fields, models
 
 
 class LoanType(models.Model):
@@ -90,8 +91,8 @@ class LoanType(models.Model):
             ("reconcile", "=", True),
         ],
         help="Account that will server as cross-account for realization.\n\n"
-             "It will use as debit account for loan in or "
-             "credit account for loan out",
+        "It will use as debit account for loan in or "
+        "credit account for loan out",
     )
     account_rounding_id = fields.Many2one(
         string="Rounding Account",
@@ -151,13 +152,6 @@ class LoanType(models.Model):
         column1="type_id",
         column2="group_id",
     )
-    loan_approve_group_ids = fields.Many2many(
-        string="Allow To Approve Loan",
-        comodel_name="res.groups",
-        relation="rel_loan_type_2_loan_allowed_approve",
-        column1="type_id",
-        column2="group_id",
-    )
     loan_cancel_group_ids = fields.Many2many(
         string="Allow To Cancel Loan",
         comodel_name="res.groups",
@@ -172,56 +166,60 @@ class LoanType(models.Model):
         column1="type_id",
         column2="group_id",
     )
+    loan_restart_approval_group_ids = fields.Many2many(
+        string="Allow To Restart Approval Loan",
+        comodel_name="res.groups",
+        relation="rel_loan_type_2_loan_allowed_restart_approval",
+        column1="type_id",
+        column2="group_id",
+    )
 
     @api.model
     def _compute_interest(
-            self, loan_amount, interest, period,
-            first_payment_date, interest_method):
+        self, loan_amount, interest, period, first_payment_date, interest_method
+    ):
         if interest_method == "flat":
-            return self._compute_flat(
-                loan_amount, interest, period, first_payment_date)
+            return self._compute_flat(loan_amount, interest, period, first_payment_date)
         elif interest_method == "effective":
             return self._compute_effective(
-                loan_amount, interest, period, first_payment_date)
+                loan_amount, interest, period, first_payment_date
+            )
         elif interest_method == "anuity":
             return self._compute_anuity(
-                loan_amount, interest, period, first_payment_date)
+                loan_amount, interest, period, first_payment_date
+            )
 
     @api.model
-    def _compute_flat(
-            self, loan_amount, interest, period,
-            first_payment_date):
+    def _compute_flat(self, loan_amount, interest, period, first_payment_date):
         result = []
 
         principle_amount = loan_amount / period
-        interest_amount = (loan_amount *
-                           (interest / 100.00)) / 12.0
-        next_payment_date = datetime.strptime(first_payment_date,
-                                              "%Y-%m-%d")
-        for loan_period in range(1, period + 1):
+        interest_amount = (loan_amount * (interest / 100.00)) / 12.0
+        next_payment_date = datetime.strptime(first_payment_date, "%Y-%m-%d")
+        for _loan_period in range(1, period + 1):
             res = {
                 "schedule_date": next_payment_date.strftime("%Y-%m-%d"),
                 "principle_amount": principle_amount,
                 "interest_amount": interest_amount,
             }
             result.append(res)
-            next_payment_date = next_payment_date + \
-                relativedelta.relativedelta(
-                    months=+1)
+            next_payment_date = next_payment_date + relativedelta.relativedelta(
+                months=+1
+            )
         return result
 
     @api.model
-    def _compute_effective(
-            self, loan_amount, interest, period,
-            first_payment_date):
+    def _compute_effective(self, loan_amount, interest, period, first_payment_date):
         result = []
         principle_amount = loan_amount / float(period)
-        interest_dec = (interest / 100.00)
+        interest_dec = interest / 100.00
         for loan_period in range(1, period + 1):
-            period_before = (loan_period - 1)
+            period_before = loan_period - 1
             interest_amount = (
-                loan_amount - (period_before * principle_amount)) * \
-                interest_dec / 12.00
+                (loan_amount - (period_before * principle_amount))
+                * interest_dec
+                / 12.00
+            )
             res = {
                 "schedule_date": first_payment_date,
                 "principle_amount": principle_amount,
@@ -231,19 +229,18 @@ class LoanType(models.Model):
         return result
 
     @api.model
-    def _compute_anuity(
-            self, loan_amount, interest, period,
-            first_payment_date):
+    def _compute_anuity(self, loan_amount, interest, period, first_payment_date):
         result = []
-        interest_decimal = (interest / 100.00)
+        interest_decimal = interest / 100.00
         total_principle_amount = 0.0
-        fixed_principle_amount = loan_amount * \
-            (
-                (interest_decimal / 12.0) /
-                (1.0 - (1.0 + (interest_decimal / 12.00))**-float(period)))
-        for loan_period in range(1, period + 1):
-            interest_amount = (loan_amount - total_principle_amount) * \
-                interest_decimal / 12.00
+        fixed_principle_amount = loan_amount * (
+            (interest_decimal / 12.0)
+            / (1.0 - (1.0 + (interest_decimal / 12.00)) ** -float(period))
+        )
+        for _loan_period in range(1, period + 1):
+            interest_amount = (
+                (loan_amount - total_principle_amount) * interest_decimal / 12.00
+            )
             principle_amount = fixed_principle_amount - interest_amount
             res = {
                 "schedule_date": first_payment_date,
