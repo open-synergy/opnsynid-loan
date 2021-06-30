@@ -4,7 +4,7 @@
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
 {
     "name": "Loan Management",
-    "version": "8.0.2.2.1",
+    "version": "8.0.2.2.2",
     "category": "Loan & Saving",
     "website": "https://simetri-sinergi.id",
     "author": "PT. Simetri Sinergi Indonesia, OpenSynergy Indonesia",
@@ -33,7 +33,8 @@
         "data/ir_cron_data.xml",
         "menu.xml",
         "wizard/realize_interest_views.xml",
-        "wizard/select_realization_entry_views.xml",
+        "wizard/select_realization_entry_out_views.xml",
+        "wizard/select_realization_entry_in_views.xml",
         "views/loan_type_views.xml",
         "views/loan_common_views.xml",
         "views/loan_payment_schedule_common_views.xml",

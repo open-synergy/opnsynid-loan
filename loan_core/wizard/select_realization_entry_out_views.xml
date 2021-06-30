@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<openerp>
+<data>
+
+<record id="loan_select_realization_entry_out_view_form" model="ir.ui.view">
+    <field name="name">loan.select.realization.entry.out.form</field>
+    <field name="model">loan.select_realization_entry_out</field>
+    <field name="arch" type="xml">
+        <form>
+            <group>
+              <field name="loan_id" invisible="1" />
+              <field
+                            name="allowed_move_line_ids"
+                            widget="many2many_tags"
+                            invisible="1"
+                        />
+              <field
+                            name="move_line_ids"
+                            colspan="4"
+                            domain="[('id', 'in', allowed_move_line_ids[0][2])]"
+                        />
+            </group>
+            <footer>
+                <button
+                            name="action_select"
+                            type="object"
+                            string="Select"
+                            class="oe_highlight"
+                        />
+                or
+                <button special="cancel" string="Cancel" />
+            </footer>
+        </form>
+    </field>
+</record>
+
+<record id="loan_select_realization_entry_out_action" model="ir.actions.act_window">
+    <field name="name">Select Realization Entry Out</field>
+    <field name="res_model">loan.select_realization_entry_out</field>
+    <field name="view_type">form</field>
+    <field name="view_mode">form</field>
+    <field name="target">new</field>
+</record>
+
+</data>
+</openerp>
