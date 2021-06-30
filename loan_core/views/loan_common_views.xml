@@ -144,12 +144,6 @@
                             attrs="{'invisible':['|',('state','not in',['draft','confirm','approve','active']),('cancel_ok','=',False)]}"
                             confirm="Cancel Loan. Are you sure?"
                         />
-                <button
-                            string="Select Realization Entry"
-                            name="%(loan_select_realization_entry_action)d"
-                            type="action"
-                            attrs="{'invisible': [('state', '!=', 'approve')]}"
-                        />
                 <field
                             name="state"
                             widget="statusbar"
@@ -395,6 +389,11 @@
                     <page name="page_realization" string="Realization">
                         <group name="grp_realization" colspan="4" col="2">
                             <field name="date_realization" />
+                            <field
+                                        name="allowed_move_line_ids"
+                                        widget="many2many_tags"
+                                        invisible="1"
+                                    />
                         </group>
                     </page>
                     <page

@@ -314,6 +314,22 @@ class LoanCommon(models.AbstractModel):
     )
 
     @api.multi
+    def _compute_allowed_move_line(self):
+        obj_account_move_line = self.env["account.move.line"]
+        for document in self:
+            move_line_ids = obj_account_move_line.search(
+                document._prepare_criteria_move_line()
+            )
+            document.allowed_move_line_ids = move_line_ids.ids
+
+    allowed_move_line_ids = fields.Many2many(
+        string="Realization Allowed Move Lines",
+        comodel_name="account.move.line",
+        compute="_compute_allowed_move_line",
+        store=False,
+    )
+
+    @api.multi
     @api.constrains("maximum_loan_amount", "loan_amount")
     def _check_loan_amount(self):
         for loan in self:
@@ -392,12 +408,6 @@ class LoanCommon(models.AbstractModel):
         for payment_data in payment_datas:
             payment_data.update({"loan_id": self.id})
             obj_payment.create(payment_data)
-
-    # @api.multi
-    # def workflow_action_confirm(self):
-    #     for loan in self:
-    #         data = loan._prepare_confirm_data()
-    #         loan.write(data)
 
     @api.multi
     def workflow_action_confirm(self):
@@ -638,6 +648,39 @@ class LoanCommon(models.AbstractModel):
         _super.restart_validation()
         for record in self:
             record.request_validation()
+            
+    @api.multi
+    def _prepare_criteria_move_line(self):
+        self.ensure_one()
+        result = [("id", "=", 0)]
+        if self.type_id.direction == "in":
+            result = self._prepare_criteria_direction_in()
+        else:
+            result = self._prepare_criteria_direction_in()
+        return result
+
+    @api.multi
+    def _prepare_criteria_direction_in(self):
+        self.ensure_one()
+        account_realization_id = self.type_id.account_realization_id.id
+        result = [
+            ("partner_id", "=", self.partner_id.id),
+            ("account_id", "=", account_realization_id),
+            ("credit", ">", 0.0),
+            ("reconcile_id", "=", False),
+        ]
+        return result
+
+    @api.multi
+    def _prepare_criteria_direction_out(self):
+        account_realization_id = self.type_id.account_realization_id.id
+        result = [
+            ("partner_id", "=", self.partner_id.id),
+            ("account_id", "=", account_realization_id),
+            ("debit", ">", 0.0),
+            ("reconcile_id", "=", False),
+        ]
+        return result
 
     @api.onchange("type_id")
     def onchange_maximum_loan_amount(self):
