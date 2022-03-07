@@ -656,7 +656,7 @@ class LoanCommon(models.AbstractModel):
         if self.type_id.direction == "in":
             result = self._prepare_criteria_direction_in()
         else:
-            result = self._prepare_criteria_direction_in()
+            result = self._prepare_criteria_direction_out()
         return result
 
     @api.multi
