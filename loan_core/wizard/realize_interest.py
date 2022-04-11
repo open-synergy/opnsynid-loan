@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 # Copyright 2016 OpenSynergy Indonesia
-# License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
+# License LGPL-3.0 or later (http://www.gnu.org/licenses/lgpl).
 
 from datetime import datetime
-from openerp import api, models, fields
+
+from openerp import api, fields, models
 from openerp.exceptions import Warning as UserError
 from openerp.tools.translate import _
 

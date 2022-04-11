@@ -1,6 +1,6 @@
-.. image:: https://img.shields.io/badge/licence-AGPL--3-blue.svg
-   :target: http://www.gnu.org/licenses/agpl-3.0-standalone.html
-   :alt: License: AGPL-3
+.. image:: https://img.shields.io/badge/licence-LGPL--3-blue.svg
+   :target: http://www.gnu.org/licenses/lgpl-3.0-standalone.html
+   :alt: License: LGPL-3
 
 ===========
 Loan - Core
@@ -32,8 +32,8 @@ Contributors
 Maintainer
 ----------
 
-.. image:: https://opensynergy-indonesia.com/logo.png
-   :alt: OpenSynergy Indonesia
-   :target: https://opensynergy-indonesia.com
+.. image:: https://simetri-sinergi.id/logo.png
+   :alt: PT. Simetri Sinergi Indonesia
+   :target: https://simetri-sinergi.id
 
-This module is maintained by the OpenSynergy Indonesia.
+This module is maintained by the PT. Simetri Sinergi Indonesia.

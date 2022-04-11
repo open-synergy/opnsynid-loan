@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
 # Copyright 2019 OpenSynergy Indonesia
-# License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
+# License LGPL-3.0 or later (http://www.gnu.org/licenses/lgpl).
 
 from datetime import datetime
-from openerp import models, fields, api
-from openerp.tools.translate import _
+
+from openerp import api, fields, models
 from openerp.exceptions import Warning as UserError
+from openerp.tools.translate import _
 
 DATE_SELECTION = map(lambda x: [x, str(x)], range(1, 32))
 
@@ -19,8 +20,9 @@ class LoanPaymentScheduleCommon(models.AbstractModel):
     @api.depends("principle_amount", "interest_amount")
     def _compute_installment(self):
         for payment in self:
-            payment.installment_amount = payment.principle_amount + \
-                payment.interest_amount
+            payment.installment_amount = (
+                payment.principle_amount + payment.interest_amount
+            )
 
     @api.multi
     def _compute_state(self):
@@ -29,9 +31,11 @@ class LoanPaymentScheduleCommon(models.AbstractModel):
             interest_move_line = payment.interest_move_line_id
             if not principle_move_line:
                 payment.principle_payment_state = "unpaid"
-            elif principle_move_line and \
-                    not principle_move_line.reconcile_partial_id and \
-                    not principle_move_line.reconcile_id:
+            elif (
+                principle_move_line
+                and not principle_move_line.reconcile_partial_id
+                and not principle_move_line.reconcile_id
+            ):
                 payment.principle_payment_state = "unpaid"
             elif principle_move_line.reconcile_partial_id:
                 payment.principle_payment_state = "partial"
@@ -40,9 +44,11 @@ class LoanPaymentScheduleCommon(models.AbstractModel):
 
             if not interest_move_line:
                 payment.interest_payment_state = "unpaid"
-            elif interest_move_line and \
-                    not interest_move_line.reconcile_partial_id and \
-                    not interest_move_line.reconcile_id:
+            elif (
+                interest_move_line
+                and not interest_move_line.reconcile_partial_id
+                and not interest_move_line.reconcile_id
+            ):
                 payment.interest_payment_state = "unpaid"
             elif interest_move_line.reconcile_partial_id:
                 payment.interest_payment_state = "partial"
@@ -158,8 +164,7 @@ class LoanPaymentScheduleCommon(models.AbstractModel):
     def name_get(self):
         res = []
         for schedule in self:
-            name = "%s %s" % (
-                schedule.loan_id.display_name, schedule.schedule_date)
+            name = "{} {}".format(schedule.loan_id.display_name, schedule.schedule_date)
             res.append((schedule.id, name))
         return res
 
@@ -192,32 +197,27 @@ class LoanPaymentScheduleCommon(models.AbstractModel):
             "journal_id": self._get_interest_journal().id,
             "date": date_realization,
             "ref": loan.name,
-            "period_id": obj_period.find(
-                date_realization)[0].id,
+            "period_id": obj_period.find(date_realization)[0].id,
         }
         return res
 
     @api.multi
     def _create_interest_realization_move(self, date_realization):
         self.ensure_one()
-        obj_move = self.env[
-            "account.move"]
-        obj_line = self.env[
-            "account.move.line"]
+        obj_move = self.env["account.move"]
+        obj_line = self.env["account.move.line"]
 
         move = obj_move.sudo().create(
-            self._prepare_interest_realization_move(
-                date_realization))
+            self._prepare_interest_realization_move(date_realization)
+        )
 
         line_receivable = obj_line.sudo().create(
-            self._prepare_interest_realization_move_line(
-                move))
+            self._prepare_interest_realization_move_line(move)
+        )
 
         self.interest_move_line_id = line_receivable
 
-        obj_line.sudo().create(
-            self._prepare_interest_income_move_line(
-                move))
+        obj_line.sudo().create(self._prepare_interest_income_move_line(move))
 
     @api.multi
     def _get_realization_move_line_amount(self):
@@ -253,12 +253,9 @@ class LoanPaymentScheduleCommon(models.AbstractModel):
     def _prepare_principle_receivable_move_line(self, move):
         self.ensure_one()
         loan = self.loan_id
-        name = _("%s %s principle receivable") % (
-            loan.name, self.schedule_date)
-        debit, credit = \
-            self._get_realization_move_line_amount()
-        account = \
-            self._get_realization_move_line_account()
+        name = _("%s %s principle receivable") % (loan.name, self.schedule_date)
+        debit, credit = self._get_realization_move_line_amount()
+        account = self._get_realization_move_line_account()
         res = {
             "move_id": move.id,
             "name": name,
@@ -273,9 +270,9 @@ class LoanPaymentScheduleCommon(models.AbstractModel):
     @api.multi
     def _create_principle_receivable_move_line(self, move):
         self.ensure_one()
-        line = self.env[
-            "account.move.line"].create(
-                self._prepare_principle_receivable_move_line(move))
+        line = self.env["account.move.line"].create(
+            self._prepare_principle_receivable_move_line(move)
+        )
         self.principle_move_line_id = line
 
     @api.multi
@@ -366,7 +363,7 @@ class LoanPaymentScheduleCommon(models.AbstractModel):
         account = old_line.account_id
         criteria = [
             ("move_id", "=", self.principle_move_id.id),
-            ("account_id", "=", account.id)
+            ("account_id", "=", account.id),
         ]
         target_line = obj_line.search(criteria)[0]
         (old_line + target_line).reconcile_partial()
@@ -388,14 +385,9 @@ class LoanPaymentScheduleCommon(models.AbstractModel):
         self.ensure_one()
         obj_move = self.env["account.move"]
         obj_line = self.env["account.move.line"]
-        move = obj_move.create(
-            self._prepare_new_principle_move())
-        line = obj_line.create(
-            self._prepare_short_new_principle_move_line(move)
-        )
-        obj_line.create(
-            self._prepare_long_new_principle_move_line(move)
-        )
+        move = obj_move.create(self._prepare_new_principle_move())
+        line = obj_line.create(self._prepare_short_new_principle_move_line(move))
+        obj_line.create(self._prepare_long_new_principle_move_line(move))
         return line
 
     @api.multi
@@ -421,8 +413,7 @@ class LoanPaymentScheduleCommon(models.AbstractModel):
             "journal_id": self._get_interest_realization_journal().id,
             "date": date_entry,
             "ref": loan.name,
-            "period_id": obj_period.find(
-                date_entry)[0].id,
+            "period_id": obj_period.find(date_entry)[0].id,
         }
         return res
 
@@ -486,8 +477,10 @@ class LoanPaymentScheduleCommon(models.AbstractModel):
     def _check_account_long_to_short_conversion(self):
         self.ensure_one()
         check = True
-        if self.principle_move_line_id.account_id != \
-                self.loan_id.type_id.long_account_principle_id:
+        if (
+            self.principle_move_line_id.account_id
+            != self.loan_id.type_id.long_account_principle_id
+        ):
             check = False
         return check
 

@@ -2,8 +2,8 @@
 # Copyright 2019 OpenSynergy Indonesia
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
 
+from openerp import SUPERUSER_ID, api
 from openupgradelib import openupgrade
-from openerp import api, SUPERUSER_ID
 
 
 def migrate_first_payment_date_loan_in(env):
@@ -18,7 +18,8 @@ def migrate_first_payment_date_loan_in(env):
             ORDER BY b.schedule_date
             LIMIT 1
         );
-        """)
+        """,
+    )
 
 
 def migrate_first_payment_date_loan_out(env):
@@ -33,19 +34,14 @@ def migrate_first_payment_date_loan_out(env):
             ORDER BY b.schedule_date
             LIMIT 1
         );
-        """)
+        """,
+    )
 
 
 @openupgrade.migrate()
 def migrate(cr, version):
     env = api.Environment(cr, SUPERUSER_ID, {})
-    openupgrade.drop_columns(
-        cr,
-        [("loan_in", "date_payment")]
-    )
-    openupgrade.drop_columns(
-        cr,
-        [("loan_out", "date_payment")]
-    )
+    openupgrade.drop_columns(cr, [("loan_in", "date_payment")])
+    openupgrade.drop_columns(cr, [("loan_out", "date_payment")])
     migrate_first_payment_date_loan_in(env)
     migrate_first_payment_date_loan_out(env)

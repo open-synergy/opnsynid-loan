@@ -1,4 +1,4 @@
-<?xml version="1.0"?>
+<?xml version="1.0" ?>
 <openerp>
 <data noupdate="1">
 
@@ -10,7 +10,7 @@
 <record model="ir.sequence" id="seq_loan">
     <field name="name">Loan Sequence</field>
     <field name="code">loan</field>
-    <field name="padding" eval="4"/>
+    <field name="padding" eval="4" />
     <field name="prefix">LN/</field>
 </record>
 

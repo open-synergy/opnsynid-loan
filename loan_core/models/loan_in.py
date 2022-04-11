@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 # Copyright 2019 OpenSynergy Indonesia
-# License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
+# License LGPL-3.0 or later (http://www.gnu.org/licenses/lgpl).
 
-from openerp import models, fields, api
+from openerp import api, fields, models
 
 
 class LoanIn(models.Model):
@@ -11,9 +11,7 @@ class LoanIn(models.Model):
     _inherit = ["loan.common"]
 
     @api.multi
-    @api.depends(
-        "move_line_header_id",
-        "move_line_header_id.reconcile_id")
+    @api.depends("move_line_header_id", "move_line_header_id.reconcile_id")
     def _compute_realization(self):
         _super = super(LoanIn, self)
         _super._compute_realization()

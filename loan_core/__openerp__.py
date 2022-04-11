@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
 # Copyright 2019 OpenSynergy Indonesia
 # Copyright 2021 PT. Simetri Sinergi Indonesia
-# License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
+# License LGPL-3.0 or later (http://www.gnu.org/licenses/lgpl).
 {
     "name": "Loan Management",
     "version": "8.0.2.2.2",
     "category": "Loan & Saving",
     "website": "https://simetri-sinergi.id",
-    "author": "PT. Simetri Sinergi Indonesia, OpenSynergy Indonesia",
-    "license": "AGPL-3",
+    "author": "OpenSynergy Indonesia, PT. Simetri Sinergi Indonesia",
+    "license": "LGPL-3",
     "application": True,
     "installable": True,
     "depends": [

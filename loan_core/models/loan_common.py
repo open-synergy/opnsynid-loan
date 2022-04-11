@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # Copyright 2019 OpenSynergy Indonesia
-# License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
+# License LGPL-3.0 or later (http://www.gnu.org/licenses/lgpl).
 
 from openerp import api, fields, models
 from openerp.exceptions import Warning as UserError
@@ -648,7 +648,7 @@ class LoanCommon(models.AbstractModel):
         _super.restart_validation()
         for record in self:
             record.request_validation()
-            
+
     @api.multi
     def _prepare_criteria_move_line(self):
         self.ensure_one()
