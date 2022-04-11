@@ -26,20 +26,20 @@ msgid "# Loan"
 msgstr ""
 
 #. module: loan_core
-#: code:addons/loan_core/models/loan_payment_schedule_common.py:339
+#: code:addons/loan_core/models/loan_payment_schedule_common.py:336
 #, python-format
 msgid "%s %s interest income"
 msgstr ""
 
 #. module: loan_core
-#: code:addons/loan_core/models/loan_payment_schedule_common.py:297
+#: code:addons/loan_core/models/loan_payment_schedule_common.py:294
 #, python-format
 msgid "%s %s interest receivable"
 msgstr ""
 
 #. module: loan_core
-#: code:addons/loan_core/models/loan_payment_schedule_common.py:445
-#: code:addons/loan_core/models/loan_payment_schedule_common.py:473
+#: code:addons/loan_core/models/loan_payment_schedule_common.py:436
+#: code:addons/loan_core/models/loan_payment_schedule_common.py:464
 #, python-format
 msgid "%s %s long to short"
 msgstr ""
@@ -51,13 +51,13 @@ msgid "%s %s principle receivable"
 msgstr ""
 
 #. module: loan_core
-#: code:addons/loan_core/models/loan_common.py:573
+#: code:addons/loan_core/models/loan_common.py:600
 #, python-format
 msgid "%s loan realization"
 msgstr ""
 
 #. module: loan_core
-#: code:addons/loan_core/models/loan_common.py:600
+#: code:addons/loan_core/models/loan_common.py:626
 #, python-format
 msgid "%s loan rounding"
 msgstr ""
@@ -91,13 +91,15 @@ msgid "Active"
 msgstr ""
 
 #. module: loan_core
-#: view:loan.common:loan_core.loan_common_view_search
-msgid "Actived"
+#: field:loan.common,active_reviewer_ids:0
+#: field:loan.in,active_reviewer_ids:0
+#: field:loan.out,active_reviewer_ids:0
+msgid "Active Reviewers"
 msgstr ""
 
 #. module: loan_core
-#: field:loan.type,loan_approve_group_ids:0
-msgid "Allow To Approve Loan"
+#: view:loan.common:loan_core.loan_common_view_search
+msgid "Actived"
 msgstr ""
 
 #. module: loan_core
@@ -111,12 +113,18 @@ msgid "Allow To Confirm Loan"
 msgstr ""
 
 #. module: loan_core
+#: field:loan.type,loan_restart_approval_group_ids:0
+msgid "Allow To Restart Approval Loan"
+msgstr ""
+
+#. module: loan_core
 #: field:loan.type,loan_restart_group_ids:0
 msgid "Allow To Restart Loan"
 msgstr ""
 
 #. module: loan_core
-#: field:loan.select_realization_entry,allowed_move_line_ids:0
+#: field:loan.select_realization_entry_in,allowed_move_line_ids:0
+#: field:loan.select_realization_entry_out,allowed_move_line_ids:0
 msgid "Allowed Move Lines"
 msgstr ""
 
@@ -128,11 +136,6 @@ msgstr ""
 #. module: loan_core
 #: view:loan.config_setting:loan_core.loan_config_setting_view_form
 msgid "Apply"
-msgstr ""
-
-#. module: loan_core
-#: view:loan.common:loan_core.loan_common_view_form
-msgid "Approve"
 msgstr ""
 
 #. module: loan_core
@@ -150,11 +153,6 @@ msgid "Approve Date"
 msgstr ""
 
 #. module: loan_core
-#: view:loan.common:loan_core.loan_common_view_form
-msgid "Approve loan. Are you sure?"
-msgstr ""
-
-#. module: loan_core
 #: view:loan.common:loan_core.loan_common_view_search
 msgid "Approved"
 msgstr ""
@@ -162,13 +160,6 @@ msgstr ""
 #. module: loan_core
 #: view:loan.common:loan_core.loan_common_view_form
 msgid "Audit"
-msgstr ""
-
-#. module: loan_core
-#: field:loan.common,approve_ok:0
-#: field:loan.in,approve_ok:0
-#: field:loan.out,approve_ok:0
-msgid "Can Approve"
 msgstr ""
 
 #. module: loan_core
@@ -193,7 +184,14 @@ msgid "Can Restart"
 msgstr ""
 
 #. module: loan_core
-#: code:addons/loan_core/models/loan_payment_schedule_common.py:356
+#: field:loan.common,restart_approval_ok:0
+#: field:loan.in,restart_approval_ok:0
+#: field:loan.out,restart_approval_ok:0
+msgid "Can Restart Approval"
+msgstr ""
+
+#. module: loan_core
+#: code:addons/loan_core/models/loan_payment_schedule_common.py:353
 #, python-format
 msgid "Can not convert long term into short term"
 msgstr ""
@@ -203,7 +201,8 @@ msgstr ""
 #: view:loan.config_setting:loan_core.loan_config_setting_view_form
 #: view:loan.payment_schedule_common:loan_core.loan_payment_schedule_common_view_search
 #: view:loan.realize_interest:loan_core.realize_interest_view_form
-#: view:loan.select_realization_entry:loan_core.loan_select_realization_entry_view_form
+#: view:loan.select_realization_entry_in:loan_core.loan_select_realization_entry_in_view_form
+#: view:loan.select_realization_entry_out:loan_core.loan_select_realization_entry_out_view_form
 msgid "Cancel"
 msgstr ""
 
@@ -223,7 +222,19 @@ msgstr ""
 
 #. module: loan_core
 #: view:loan.common:loan_core.loan_common_view_form
-msgid "Cancel loan. Are you sure?"
+msgid "Cancel Loan. Are you sure?"
+msgstr ""
+
+#. module: loan_core
+#: field:loan.common,cancel_reason_id:0
+#: field:loan.in,cancel_reason_id:0
+#: field:loan.out,cancel_reason_id:0
+msgid "Cancel Reason"
+msgstr ""
+
+#. module: loan_core
+#: view:loan.common:loan_core.loan_common_view_form
+msgid "Cancellation reason:"
 msgstr ""
 
 #. module: loan_core
@@ -303,6 +314,8 @@ msgstr ""
 #: field:loan.out_payment_schedule,create_uid:0
 #: field:loan.realize_interest,create_uid:0
 #: field:loan.select_realization_entry,create_uid:0
+#: field:loan.select_realization_entry_in,create_uid:0
+#: field:loan.select_realization_entry_out,create_uid:0
 #: field:loan.type,create_uid:0
 msgid "Created by"
 msgstr ""
@@ -315,6 +328,8 @@ msgstr ""
 #: field:loan.out_payment_schedule,create_date:0
 #: field:loan.realize_interest,create_date:0
 #: field:loan.select_realization_entry,create_date:0
+#: field:loan.select_realization_entry_in,create_date:0
+#: field:loan.select_realization_entry_out,create_date:0
 #: field:loan.type,create_date:0
 msgid "Created on"
 msgstr ""
@@ -363,6 +378,13 @@ msgid "Date of the last message posted on the record."
 msgstr ""
 
 #. module: loan_core
+#: field:loan.common,definition_id:0
+#: field:loan.in,definition_id:0
+#: field:loan.out,definition_id:0
+msgid "Definition"
+msgstr ""
+
+#. module: loan_core
 #: field:loan.type,decription:0
 msgid "Description"
 msgstr ""
@@ -385,6 +407,8 @@ msgstr ""
 #: field:loan.payment_schedule_common,display_name:0
 #: field:loan.realize_interest,display_name:0
 #: field:loan.select_realization_entry,display_name:0
+#: field:loan.select_realization_entry_in,display_name:0
+#: field:loan.select_realization_entry_out,display_name:0
 #: field:loan.type,display_name:0
 msgid "Display Name"
 msgstr ""
@@ -485,6 +509,8 @@ msgstr ""
 #: field:loan.payment_schedule_common,id:0
 #: field:loan.realize_interest,id:0
 #: field:loan.select_realization_entry,id:0
+#: field:loan.select_realization_entry_in,id:0
+#: field:loan.select_realization_entry_out,id:0
 #: field:loan.type,id:0
 msgid "ID"
 msgstr ""
@@ -611,6 +637,8 @@ msgstr ""
 #: field:loan.payment_schedule_common,__last_update:0
 #: field:loan.realize_interest,__last_update:0
 #: field:loan.select_realization_entry,__last_update:0
+#: field:loan.select_realization_entry_in,__last_update:0
+#: field:loan.select_realization_entry_out,__last_update:0
 #: field:loan.type,__last_update:0
 msgid "Last Modified on"
 msgstr ""
@@ -623,6 +651,8 @@ msgstr ""
 #: field:loan.out_payment_schedule,write_uid:0
 #: field:loan.realize_interest,write_uid:0
 #: field:loan.select_realization_entry,write_uid:0
+#: field:loan.select_realization_entry_in,write_uid:0
+#: field:loan.select_realization_entry_out,write_uid:0
 #: field:loan.type,write_uid:0
 msgid "Last Updated by"
 msgstr ""
@@ -635,6 +665,8 @@ msgstr ""
 #: field:loan.out_payment_schedule,write_date:0
 #: field:loan.realize_interest,write_date:0
 #: field:loan.select_realization_entry,write_date:0
+#: field:loan.select_realization_entry_in,write_date:0
+#: field:loan.select_realization_entry_out,write_date:0
 #: field:loan.type,write_date:0
 msgid "Last Updated on"
 msgstr ""
@@ -646,6 +678,8 @@ msgstr ""
 #: view:loan.common:loan_core.loan_common_view_search
 #: view:loan.common:loan_core.loan_common_view_tree
 #: view:loan.payment_schedule_common:loan_core.loan_payment_schedule_common_view_search
+#: field:loan.select_realization_entry_in,loan_id:0
+#: field:loan.select_realization_entry_out,loan_id:0
 #: view:loan.type:loan_core.loan_type_view_form
 msgid "Loan"
 msgstr ""
@@ -752,31 +786,31 @@ msgid "Loan Type and Code"
 msgstr ""
 
 #. module: loan_core
-#: code:addons/loan_core/models/loan_common.py:321
+#: code:addons/loan_core/models/loan_common.py:341
 #, python-format
 msgid "Loan amount exceed maximum loan amount"
 msgstr ""
 
 #. module: loan_core
-#: code:addons/loan_core/models/loan_common.py:317
+#: code:addons/loan_core/models/loan_common.py:337
 #, python-format
 msgid "Loan amount has to be greater than 0"
 msgstr ""
 
 #. module: loan_core
-#: code:addons/loan_core/models/loan_common.py:413
+#: code:addons/loan_core/models/loan_common.py:442
 #, python-format
 msgid "Loan can only be cancelled on draft, waiting for approval or ready to be process state"
 msgstr ""
 
 #. module: loan_core
-#: code:addons/loan_core/models/loan_common.py:332
+#: code:addons/loan_core/models/loan_common.py:352
 #, python-format
 msgid "Loan period exceed maximum installment period"
 msgstr ""
 
 #. module: loan_core
-#: code:addons/loan_core/models/loan_common.py:329
+#: code:addons/loan_core/models/loan_common.py:349
 #, python-format
 msgid "Loan period has to be greated than 0"
 msgstr ""
@@ -825,61 +859,77 @@ msgstr ""
 
 #. module: loan_core
 #: field:loan.select_realization_entry,move_line_ids:0
+#: field:loan.select_realization_entry_in,move_line_ids:0
+#: field:loan.select_realization_entry_out,move_line_ids:0
 msgid "Move Lines"
 msgstr ""
 
 #. module: loan_core
-#: code:addons/loan_core/models/loan_payment_schedule_common.py:330
+#: field:loan.common,need_validation:0
+#: field:loan.in,need_validation:0
+#: field:loan.out,need_validation:0
+msgid "Need Validation"
+msgstr ""
+
+#. module: loan_core
+#: field:loan.common,next_reviewer_ids:0
+#: field:loan.in,next_reviewer_ids:0
+#: field:loan.out,next_reviewer_ids:0
+msgid "Next Reviewers"
+msgstr ""
+
+#. module: loan_core
+#: code:addons/loan_core/models/loan_payment_schedule_common.py:327
 #, python-format
 msgid "No interest income account defined"
 msgstr ""
 
 #. module: loan_core
-#: code:addons/loan_core/models/loan_payment_schedule_common.py:178
+#: code:addons/loan_core/models/loan_payment_schedule_common.py:183
 #, python-format
 msgid "No interest journal defined"
 msgstr ""
 
 #. module: loan_core
-#: code:addons/loan_core/models/loan_payment_schedule_common.py:408
+#: code:addons/loan_core/models/loan_payment_schedule_common.py:400
 #, python-format
 msgid "No interest realization journal defined"
 msgstr ""
 
 #. module: loan_core
-#: code:addons/loan_core/wizard/realize_interest.py:28
+#: code:addons/loan_core/wizard/realize_interest.py:29
 #, python-format
 msgid "No loan repayment schedule selected"
 msgstr ""
 
 #. module: loan_core
 #: code:addons/loan_core/models/loan_payment_schedule_common.py:243
-#: code:addons/loan_core/models/loan_payment_schedule_common.py:464
+#: code:addons/loan_core/models/loan_payment_schedule_common.py:455
 #, python-format
 msgid "No long-term principle account defined"
 msgstr ""
 
 #. module: loan_core
-#: code:addons/loan_core/models/loan_common.py:565
+#: code:addons/loan_core/models/loan_common.py:592
 #, python-format
 msgid "No realization account defined"
 msgstr ""
 
 #. module: loan_core
-#: code:addons/loan_core/models/loan_common.py:525
+#: code:addons/loan_core/models/loan_common.py:553
 #, python-format
 msgid "No realization journal defined"
 msgstr ""
 
 #. module: loan_core
-#: code:addons/loan_core/models/loan_common.py:592
+#: code:addons/loan_core/models/loan_common.py:618
 #, python-format
 msgid "No rounding account defined"
 msgstr ""
 
 #. module: loan_core
 #: code:addons/loan_core/models/loan_payment_schedule_common.py:248
-#: code:addons/loan_core/models/loan_payment_schedule_common.py:436
+#: code:addons/loan_core/models/loan_payment_schedule_common.py:427
 #, python-format
 msgid "No short-term principle account defined"
 msgstr ""
@@ -1004,6 +1054,13 @@ msgid "Realization Account"
 msgstr ""
 
 #. module: loan_core
+#: field:loan.common,allowed_move_line_ids:0
+#: field:loan.in,allowed_move_line_ids:0
+#: field:loan.out,allowed_move_line_ids:0
+msgid "Realization Allowed Move Lines"
+msgstr ""
+
+#. module: loan_core
 #: field:loan.common,date_realization:0
 #: field:loan.common,realization_date:0
 #: field:loan.in,date_realization:0
@@ -1094,7 +1151,48 @@ msgstr ""
 
 #. module: loan_core
 #: view:loan.common:loan_core.loan_common_view_form
+msgid "Reject"
+msgstr ""
+
+#. module: loan_core
+#: field:loan.common,rejected:0
+#: field:loan.in,rejected:0
+#: field:loan.out,rejected:0
+msgid "Rejected"
+msgstr ""
+
+#. module: loan_core
+#: view:loan.common:loan_core.loan_common_view_form
 msgid "Repayment Terms"
+msgstr ""
+
+#. module: loan_core
+#: view:loan.common:loan_core.loan_common_view_form
+msgid "Request Validation"
+msgstr ""
+
+#. module: loan_core
+#: view:loan.common:loan_core.loan_common_view_form
+msgid "Restart Validation"
+msgstr ""
+
+#. module: loan_core
+#: field:loan.common,reviewer_partner_ids:0
+#: field:loan.in,reviewer_partner_ids:0
+#: field:loan.out,reviewer_partner_ids:0
+msgid "Review Partners"
+msgstr ""
+
+#. module: loan_core
+#: field:loan.common,reviewer_ids:0
+#: field:loan.in,reviewer_ids:0
+#: field:loan.out,reviewer_ids:0
+msgid "Reviewers"
+msgstr ""
+
+#. module: loan_core
+#: view:loan.common:loan_core.loan_common_view_form
+msgid "Reviews"
 msgstr ""
 
 #. module: loan_core
@@ -1130,15 +1228,28 @@ msgid "Schedule Date by Year"
 msgstr ""
 
 #. module: loan_core
-#: view:loan.select_realization_entry:loan_core.loan_select_realization_entry_view_form
+#: view:loan.select_realization_entry_in:loan_core.loan_select_realization_entry_in_view_form
+#: view:loan.select_realization_entry_out:loan_core.loan_select_realization_entry_out_view_form
 msgid "Select"
 msgstr ""
 
 #. module: loan_core
-#: model:ir.actions.act_window,name:loan_core.loan_select_realization_entry_action
 #: model:ir.model,name:loan_core.model_loan_select_realization_entry
-#: view:loan.common:loan_core.loan_common_view_form
+#: view:loan.in:loan_core.loan_in_view_form
+#: view:loan.out:loan_core.loan_out_view_form
 msgid "Select Realization Entry"
+msgstr ""
+
+#. module: loan_core
+#: model:ir.actions.act_window,name:loan_core.loan_select_realization_entry_in_action
+#: model:ir.model,name:loan_core.model_loan_select_realization_entry_in
+msgid "Select Realization Entry In"
+msgstr ""
+
+#. module: loan_core
+#: model:ir.actions.act_window,name:loan_core.loan_select_realization_entry_out_action
+#: model:ir.model,name:loan_core.model_loan_select_realization_entry_out
+msgid "Select Realization Entry Out"
 msgstr ""
 
 #. module: loan_core
@@ -1176,6 +1287,12 @@ msgstr ""
 #: help:loan.out_payment_schedule,interest_move_id:0
 #: help:loan.out_payment_schedule,principle_move_id:0
 msgid "The move of this entry line."
+msgstr ""
+
+#. module: loan_core
+#: view:loan.common:loan_core.loan_common_view_form
+msgid "This service contract needs to be\n"
+"                    validated."
 msgstr ""
 
 #. module: loan_core
@@ -1236,6 +1353,25 @@ msgid "Unreconcilled"
 msgstr ""
 
 #. module: loan_core
+#: view:loan.common:loan_core.loan_common_view_form
+msgid "Validate"
+msgstr ""
+
+#. module: loan_core
+#: field:loan.common,validated:0
+#: field:loan.in,validated:0
+#: field:loan.out,validated:0
+msgid "Validated"
+msgstr ""
+
+#. module: loan_core
+#: field:loan.common,review_ids:0
+#: field:loan.in,review_ids:0
+#: field:loan.out,review_ids:0
+msgid "Validations"
+msgstr ""
+
+#. module: loan_core
 #: view:loan.common:loan_core.loan_common_view_search
 #: selection:loan.common,state:0
 #: selection:loan.in,state:0
@@ -1260,7 +1396,7 @@ msgid "Workflow Policy"
 msgstr ""
 
 #. module: loan_core
-#: code:addons/loan_core/models/loan_common.py:348
+#: code:addons/loan_core/models/loan_common.py:371
 #, python-format
 msgid "You can not delete loan %s. \n"
 "\n"
@@ -1272,7 +1408,8 @@ msgstr ""
 #. module: loan_core
 #: view:loan.config_setting:loan_core.loan_config_setting_view_form
 #: view:loan.realize_interest:loan_core.realize_interest_view_form
-#: view:loan.select_realization_entry:loan_core.loan_select_realization_entry_view_form
+#: view:loan.select_realization_entry_in:loan_core.loan_select_realization_entry_in_view_form
+#: view:loan.select_realization_entry_out:loan_core.loan_select_realization_entry_out_view_form
 msgid "or"
 msgstr ""
 
