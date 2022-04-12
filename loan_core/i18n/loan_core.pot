@@ -307,6 +307,11 @@ msgid "Convert Long Term Into Short Term Loan"
 msgstr ""
 
 #. module: loan_core
+#: view:loan.common:loan_core.loan_common_view_form
+msgid "Convert long term into short term loan. Are you sure?"
+msgstr ""
+
+#. module: loan_core
 #: field:loan.config_setting,create_uid:0
 #: field:loan.in,create_uid:0
 #: field:loan.in_payment_schedule,create_uid:0
@@ -1142,6 +1147,11 @@ msgstr ""
 #. module: loan_core
 #: model:ir.filters,name:loan_core.ir_filter_loan_in_02
 msgid "Realized Loan In"
+msgstr ""
+
+#. module: loan_core
+#: view:loan.common:loan_core.loan_common_view_form
+msgid "Realized interest. Are you sure?"
 msgstr ""
 
 #. module: loan_core
