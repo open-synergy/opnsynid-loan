@@ -271,6 +271,7 @@
                                         ('interest_move_line_id','!=',False)]}"
                                             string="Realize Interest"
                                             icon="gtk-execute"
+                                            confirm="Realized interest. Are you sure?"
                                         />
                                 <field
                                             name="installment_amount"
@@ -295,6 +296,7 @@
                                         ]}"
                                             string="Convert Long Term Into Short Term Loan"
                                             icon="gtk-execute"
+                                            confirm="Convert long term into short term loan. Are you sure?"
                                         />
                             </tree>
                             <form string="Payment Schedule">

@@ -4,7 +4,7 @@
 # License LGPL-3.0 or later (http://www.gnu.org/licenses/lgpl).
 {
     "name": "Loan Management",
-    "version": "8.0.2.2.2",
+    "version": "8.0.2.3.0",
     "category": "Loan & Saving",
     "website": "https://simetri-sinergi.id",
     "author": "OpenSynergy Indonesia, PT. Simetri Sinergi Indonesia",
